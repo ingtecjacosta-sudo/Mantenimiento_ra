@@ -328,6 +328,7 @@ function startPlace() {
   notify(placeHint(0), 6);
   applyVisibility();
   refreshUI();
+  if (state.handheld) overlay.showGuide(); // guía con croquis antes de marcar
 }
 
 /** Punto apuntado con la mira central del celular. */
@@ -426,6 +427,7 @@ function cancelPlace() {
   reticle.visible = false;
   reticle.userData.init = false;
   placeMarker.visible = false;
+  overlay.hideGuide();
   if (placeBackup) {
     machineRoot.position.copy(placeBackup.p);
     machineRoot.quaternion.copy(placeBackup.q);
@@ -1044,7 +1046,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = '7';
+export const APP_VERSION = '8';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { CanvasPanel, COLORS, STATUS, font, fitText, roundRect, drawWrapped, drawButton } from './panel.js';
 import { maintenanceInfo, hoursText, getChecklist, setChecklist } from './data.js';
 import { bestViewFor } from './photo.js';
+import { drawCroquis, frontLeftIn } from './croquis.js';
 
 const _v = new THREE.Vector3();
 
@@ -113,9 +114,10 @@ export class Toolbar {
         const txt = state.placeStep === 0
           ? `Apunta al suelo bajo el extremo MÁS ADELANTADO del equipo${r.frontHint ? ` (${r.frontHint})` : ''}.`
           : `Ahora al suelo bajo el extremo MÁS ATRASADO${r.rearHint ? ` (${r.rearHint})` : ''}.`;
-        const y = drawWrapped(ctx, txt, 18, 136, W - 36, 25, 210);
-        ctx.fillStyle = COLORS.muted;
-        drawWrapped(ctx, 'Gatillo / pellizco = marcar.', 18, y + 2, W - 36, 25, 240);
+        roundRect(ctx, 14, 118, W - 28, 168, 12); ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fill();
+        drawCroquis(ctx, machine, 14, 118, W - 28, 168, { step: state.placeStep, views: 'side', scale: 1, frontLeft: frontLeftIn(this.app) });
+        ctx.fillStyle = COLORS.text; ctx.font = font(18, 500);
+        drawWrapped(ctx, `${txt} Gatillo/pellizco = marcar.`, 18, 308, W - 36, 22, 336);
         grid([
           state.placed || state.placeStep > 0 ? { label: 'Cancelar', onClick: actions.cancelPlace } : null,
           { label: 'Salir de RA', onClick: actions.exitXR },

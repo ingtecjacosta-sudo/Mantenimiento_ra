@@ -3,6 +3,7 @@
 import { STATUS } from './panel.js';
 import { maintenanceInfo, hoursText, getChecklist, setChecklist } from './data.js';
 import { VIEWS } from './photo.js';
+import { drawCroquis, photoGuide, frontLeftIn } from './croquis.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
@@ -26,6 +27,44 @@ export class ArOverlay {
       if (el && !el.disabled) this.onAction(el.dataset.act, el.dataset.arg);
     });
   }
+
+  /** Dibuja el croquis del equipo en un <canvas> a la resolución de la pantalla. */
+  paintCroquis(canvas, opts) {
+    if (!canvas || !this.app.machine) return;
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    drawCroquis(ctx, this.app.machine, 0, 0, r.width, r.height, { frontLeft: frontLeftIn(this.app), ...opts });
+  }
+
+  /** Guía de ubicación: croquis grande, foto del equipo con los puntos y pasos a seguir. */
+  showGuide() {
+    const m = this.app.machine, ref = m.reference ?? {};
+    let el = this.root.querySelector('#arGuide');
+    if (!el) { el = document.createElement('section'); el.id = 'arGuide'; el.className = 'ui'; this.root.appendChild(el); }
+    const pg = photoGuide(this.app);
+    const photo = pg ? `<p class="muted">En tu foto (${pg.view === 'izq' ? 'costado izquierdo' : 'costado derecho'}):</p>
+      <div class="guide-photo"><img src="${pg.url}" alt="Foto del equipo">
+        <i style="left:${pg.p1[0] * 100}%;top:${pg.p1[1] * 100}%">1</i><i class="two" style="left:${pg.p2[0] * 100}%;top:${pg.p2[1] * 100}%">2</i></div>` : '';
+    el.innerHTML = `<h3>Cómo ubicar el equipo</h3>
+      <p>Vas a marcar <b>2 puntos en el suelo</b>, sobre la <b>línea central</b> del equipo: uno bajo el extremo de adelante y otro bajo el de atrás.</p>
+      <canvas class="croquis big" aria-label="Croquis del equipo con los puntos 1 y 2"></canvas>
+      ${photo}
+      <ol>
+        <li><b>Punto 1 · adelante:</b> párate frente al equipo, a 2 o 3 m. Apunta la mira al suelo <b>justo debajo del extremo más adelantado</b>${ref.frontHint ? ` (${esc(ref.frontHint)})` : ''}, al centro del ancho.</li>
+        <li><b>Punto 2 · atrás:</b> camina por el costado hasta la parte trasera. Apunta al suelo <b>justo debajo del extremo más atrasado</b>${ref.rearHint ? ` (${esc(ref.rearHint)})` : ''}, también al centro.</li>
+        <li>Marca solo con el mensaje verde <b>✔ Suelo detectado</b>. Después del punto 1 verás el <b>contorno azul</b>: debe calzar con la máquina antes de marcar el punto 2.</li>
+      </ol>
+      <p class="muted">Son los mismos extremos que marcaste al calibrar las fotos de costado.</p>
+      <button data-act="closeGuide" class="primary wide">Entendido, empezar</button>`;
+    el.hidden = false;
+    this.paintCroquis(el.querySelector('canvas.croquis'), { step: this.app.state.placeStep, views: 'both', scale: 1 });
+  }
+  hideGuide() { const el = this.root.querySelector('#arGuide'); if (el) el.hidden = true; }
 
   /** Indica si la mira está sobre el suelo detectado (solo actualiza el DOM cuando cambia). */
   setAimStatus(ok) {
@@ -59,6 +98,8 @@ export class ArOverlay {
       case 'service': a.registerService(this.label); break;
       case 'rotate': a.rotate(Number(arg)); break;
       case 'registerStep': a.registerStep(Number(arg)); break;
+      case 'showGuide': this.showGuide(); return;
+      case 'closeGuide': this.hideGuide(); return;
       default: a[act]?.(); break;
     }
     this.render();
@@ -96,11 +137,14 @@ export class ArOverlay {
       const step = state.placeStep === 0
         ? `<b>Punto 1 de 2:</b> centra la mira en el suelo justo debajo del extremo <b>MÁS ADELANTADO</b> del equipo${r.frontHint ? ` (${esc(r.frontHint)})` : ''}.`
         : `<b>Punto 2 de 2:</b> camina y centra la mira en el suelo debajo del extremo <b>MÁS ATRASADO</b>${r.rearHint ? ` (${esc(r.rearHint)})` : ''}. El contorno azul se ajusta a la máquina.`;
-      this.bottom.innerHTML = `<p>${step}</p>
+      this.bottom.innerHTML = `<div class="croquis-row"><canvas class="croquis" aria-label="Croquis con la ubicación de los puntos"></canvas>
+          <button data-act="showGuide" class="guide-btn" aria-label="Ver guía">?</button></div>
+        <p>${step}</p>
         <p class="aim" id="arAim">Buscando el suelo… mueve el celular despacio apuntando al piso.</p>
         <div class="ar-row">${b('placeHere', state.placeStep === 0 ? 'Marcar punto 1' : 'Marcar punto 2', { cls: 'primary' })}
         ${state.placed || state.placeStep > 0 ? b('cancelPlace', 'Cancelar') : ''}</div>`;
       this.aimOk = null;
+      this.paintCroquis(this.bottom.querySelector('canvas.croquis'), { step: state.placeStep, views: 'side', scale: 0.85 });
     } else if (state.mode === 'register') {
       const comps = machine.components, comp = comps[state.registerIndex];
       const done = comps.filter((c) => Array.isArray(c.position)).length;

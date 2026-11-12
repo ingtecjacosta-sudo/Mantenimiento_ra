@@ -64,7 +64,7 @@ La ficha de cada componente muestra las fotos donde está marcado. Las fotos que
 
 1. Toca **Entrar en realidad aumentada** y acepta el permiso de cámara.
 2. Mueve el celular despacio apuntando al suelo hasta que aparezca la retícula naranja.
-3. **Ubicar el equipo en 2 puntos**: centra la mira en el suelo justo debajo del extremo **más adelantado** del equipo (en la excavadora: bajo la punta del cucharón) y toca **Marcar punto 1**. Camina y centra la mira bajo el extremo **más atrasado** (bajo el contrapeso) y toca **Marcar punto 2**. El contorno azul se estira entre ambos puntos para que veas si coincide con la máquina.
+3. **Ubicar el equipo en 2 puntos** (al empezar se abre una **guía con el croquis** del equipo, en vista lateral y desde arriba, y tu foto de costado con los puntos 1 y 2 marcados; el botón **?** la vuelve a abrir): centra la mira en el suelo justo debajo del extremo **más adelantado** del equipo (en la excavadora: bajo la punta del cucharón) y toca **Marcar punto 1**. Camina y centra la mira bajo el extremo **más atrasado** (bajo el contrapeso) y toca **Marcar punto 2**. El contorno azul se estira entre ambos puntos para que veas si coincide con la máquina.
    - Con 2 puntos la app conoce la posición, la **orientación** y el **tamaño real**: no importa desde dónde estés parado. Si el largo medido no coincide con las medidas del equipo, se ajusta la escala y te avisa.
    - Los extremos son los mismos que se marcan al calibrar las fotos, así los carteles calculados desde las fotos caen en su lugar.
    - Solo se puede marcar cuando el celular **detectó el suelo** (mensaje verde ✔).
@@ -128,7 +128,8 @@ Cada equipo es un JSON en `data/`, listado en `data/machines.json`. Ejemplo: `da
 | `js/labels.js` | Carteles de componentes (marcador, línea guía, panel compacto y detallado) |
 | `js/ui.js` | Ficha completa, menú flotante y mensajes dentro del visor |
 | `js/overlay.js` | Interfaz táctil sobre la cámara (modo celular) |
-| `js/photo.js` | Foto de referencia: editor, calibración y cálculo de posiciones 3D |
+| `js/photo.js` | Fotos de referencia: editor, calibración y cálculo de posiciones 3D |
+| `js/croquis.js` | Croquis del equipo (lateral y en planta) que guía dónde marcar los 2 puntos |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app (PWA) y uso sin conexión |
 | `js/panel.js` | Paneles 2D (canvas) con botones clicables en 3D |
 | `js/data.js` | Estado de mantenimiento, guardado local y exportación |
