@@ -1,4 +1,4 @@
-# Mantenimiento RA — Meta Quest 3 y celular Android
+# Mantenimiento RA — Meta Quest 3, Android y iPhone
 
 App de **realidad mixta** para mantenimiento de maquinaria pesada. Con el Quest 3 ves la máquina real (passthrough) y, a medida que miras las piezas, aparecen **carteles flotantes** con la información de cada componente: estado, próximo servicio, especificaciones, procedimiento paso a paso, checklist y repuestos.
 
@@ -73,6 +73,17 @@ La ficha de cada componente muestra las fotos donde está marcado. Las fotos que
 
 > En el celular no hay anclas persistentes: hay que ubicar el equipo cada vez que entras. Los puntos registrados sí quedan guardados.
 
+## Uso en iPhone / iPad
+
+Safari de iOS **no tiene WebXR**, así que en iPhone la realidad aumentada se abre con **AR Quick Look**, el visor nativo de Apple (ARKit). Funciona en Safari, sin instalar nada.
+
+1. Abre la app en **Safari** y toca **📱 Ver en realidad aumentada**. Se muestra una guía con el croquis y se genera el modelo 3D del equipo (formato USDZ) con sus carteles.
+2. Toca **Abrir en realidad aumentada**. El modelo aparece a **tamaño real** (escala fija al 100 %), con el contorno translúcido del equipo y dos discos naranjas en el suelo: **1** (extremo delantero) y **2** (extremo trasero).
+3. **Arrastra** el modelo con un dedo y **gíralo** con dos dedos hasta que los discos 1 y 2 queden bajo los extremos de la máquina real.
+4. Recorre la máquina: los carteles muestran estado, próximo servicio y datos clave.
+
+Diferencias con Android/Quest: la alineación es manual (sin ubicación con 2 toques), los carteles son fijos (no giran hacia ti ni se tocan para abrir la ficha) y no se pueden registrar puntos en RA. Las fichas completas, el editor de fotos y la maqueta 3D funcionan igual en la app. El botón **Descargar modelo (.usdz)** permite guardarlo o compartirlo (por ejemplo, por AirDrop).
+
 ## Uso en el visor
 
 | Acción | Controles | Manos |
@@ -130,6 +141,7 @@ Cada equipo es un JSON en `data/`, listado en `data/machines.json`. Ejemplo: `da
 | `js/overlay.js` | Interfaz táctil sobre la cámara (modo celular) |
 | `js/photo.js` | Fotos de referencia: editor, calibración y cálculo de posiciones 3D |
 | `js/croquis.js` | Croquis del equipo (lateral y en planta) que guía dónde marcar los 2 puntos |
+| `js/quicklook.js` | iPhone/iPad: genera el modelo USDZ con los carteles para AR Quick Look |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app (PWA) y uso sin conexión |
 | `js/panel.js` | Paneles 2D (canvas) con botones clicables en 3D |
 | `js/data.js` | Estado de mantenimiento, guardado local y exportación |

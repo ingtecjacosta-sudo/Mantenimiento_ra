@@ -197,3 +197,20 @@ canvas.croquis.big { height: 300px; margin: 6px 0; }
 .guide-photo i { position: absolute; width: 28px; height: 28px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--accent);
   color: #111; font: 800 15px/28px system-ui, sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 3px #0d1117; }
 .guide-photo i.two { background: #6e7681; color: #fff; }
+
+/* iPhone: guía de realidad aumentada (AR Quick Look) */
+#iosGuide { position: fixed; inset: 0; z-index: 60; overflow-y: auto; background: var(--bg); color: var(--text);
+  padding: max(14px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); max-width: 720px; margin: 0 auto; }
+#iosGuide[hidden] { display: none; }
+#iosGuide header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#iosGuide h2 { margin: 0; font-size: 20px; }
+#iosGuide header button { flex: 0 0 auto; width: 46px; }
+#iosGuide p, #iosGuide ol { font-size: 15px; }
+#iosGuide ol { padding-left: 20px; }
+#iosGuide li { margin-bottom: 8px; }
+#iosGuide .muted { color: var(--muted); font-size: 13px; }
+#iosGuide .crit { color: var(--crit); }
+#iosGuide .guide-photo { margin: 8px 0; }
+#iosArLink { display: block; margin: 12px 0 6px; }
+#iosArLink img { display: block; width: 100%; height: auto; border-radius: 14px; }
+#iosArSlot .button { display: block; margin-top: 8px; }

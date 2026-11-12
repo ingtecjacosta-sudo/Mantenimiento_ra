@@ -6,6 +6,8 @@ import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { ComponentLabel } from './labels.js';
 import { DetailWindow, Toolbar, Hud } from './ui.js';
 import { ArOverlay } from './overlay.js';
+import { isIOS, supportsQuickLook, exportUSDZ, quickLookHref } from './quicklook.js';
+import { drawCroquis, photoGuide, frontLeftIn } from './croquis.js';
 import { buildPreview, disposeTree, previewBounds } from './preview.js';
 import { PhotoEditor, savePhoto, loadPhoto, componentFromPhotos, migratePhotos, photoKey, VIEWS, blobToDataURL, dataURLToBlob } from './photo.js';
 import {
@@ -939,9 +941,20 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 }
 
+const IOS_MODE = isIOS() || new URLSearchParams(location.search).has('iphone');
+
 async function checkXR() {
   const btn = $('btnXR'), status = $('xrStatus');
   btn.textContent = 'Visor XR no detectado';
+  if (IOS_MODE) {
+    // iPhone/iPad: Safari no tiene WebXR → visor de realidad aumentada de Apple (AR Quick Look)
+    btn.disabled = false;
+    btn.textContent = '📱 Ver en realidad aumentada';
+    status.textContent = supportsQuickLook() || !isIOS()
+      ? 'En iPhone la realidad aumentada se abre con el visor de Apple (AR Quick Look).'
+      : 'Abre esta página en Safari para usar la realidad aumentada del iPhone.';
+    return;
+  }
   if (!window.isSecureContext) { status.textContent = 'WebXR necesita HTTPS (o localhost).'; return; }
   if (!navigator.xr) { status.textContent = 'Este navegador no tiene WebXR. Usa Chrome en Android o el navegador del Meta Quest 3. Aquí puedes probarla en modo maqueta.'; return; }
   const ar = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
@@ -959,7 +972,10 @@ async function checkXR() {
 }
 
 function setupDom() {
-  $('btnXR')?.addEventListener('click', () => enterXR().catch((e) => { $('xrStatus').textContent = `Error al iniciar XR: ${e.message}`; }));
+  $('btnXR')?.addEventListener('click', () => {
+    if (IOS_MODE) { openIosGuide(); return; }
+    enterXR().catch((e) => { $('xrStatus').textContent = `Error al iniciar XR: ${e.message}`; });
+  });
   $('btnShowAll')?.addEventListener('click', app.actions.toggleShowAll);
   $('btnAlerts')?.addEventListener('click', app.actions.toggleAlertsOnly);
   $('btnExport')?.addEventListener('click', app.actions.exportJSON);
@@ -1041,12 +1057,71 @@ function setupDom() {
   });
 }
 
+// --- iPhone: guía + modelo USDZ para AR Quick Look ---------------------------------
+let iosUsdzUrl = null;
+
+/** Imagen del botón: Quick Look exige que el enlace <a rel="ar"> contenga solo una imagen. */
+function arButtonImage(text) {
+  const c = document.createElement('canvas');
+  c.width = 900; c.height = 150;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffb000';
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(0, 0, 900, 150, 30) : ctx.rect(0, 0, 900, 150); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.font = '700 52px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 450, 78);
+  return c.toDataURL('image/png');
+}
+
+async function openIosGuide() {
+  const m = app.machine;
+  const el = ensureEl('iosGuide', '<section id="iosGuide" hidden></section>');
+  const pg = photoGuide(app);
+  const ref = m.reference ?? {};
+  const placed = m.components.filter((c) => Array.isArray(c.position)).length;
+  el.innerHTML = `<header><h2>Realidad aumentada en iPhone</h2><button data-close aria-label="Cerrar">✕</button></header>
+    <p>Se abre el visor de realidad aumentada de Apple con <b>${escapeHtml(m.name)}</b> a <b>tamaño real</b>, con ${placed} carteles y dos discos naranjas en el suelo: <b>1</b> (adelante) y <b>2</b> (atrás).</p>
+    <canvas class="croquis big"></canvas>
+    ${pg ? `<div class="guide-photo"><img src="${pg.url}" alt="Foto del equipo"><i style="left:${pg.p1[0] * 100}%;top:${pg.p1[1] * 100}%">1</i><i class="two" style="left:${pg.p2[0] * 100}%;top:${pg.p2[1] * 100}%">2</i></div>` : ''}
+    <ol>
+      <li>Toca el botón de abajo y mueve el iPhone apuntando al suelo hasta que aparezca el modelo. Aléjate unos metros para ver el equipo completo.</li>
+      <li><b>Arrastra</b> el modelo con un dedo y <b>gíralo</b> con dos dedos hasta que el disco <b>1</b> quede en el suelo bajo el extremo más adelantado${ref.frontHint ? ` (${escapeHtml(ref.frontHint)})` : ''} y el disco <b>2</b> bajo el más atrasado${ref.rearHint ? ` (${escapeHtml(ref.rearHint)})` : ''}. El contorno azul debe calzar con la máquina.</li>
+      <li>Recorre la máquina: cada cartel muestra el estado, el próximo servicio y los datos clave. Para la ficha completa (pasos, checklist, repuestos) cierra el visor y toca el componente en la app.</li>
+    </ol>
+    <p class="muted">La escala está fija en 100 % para que no se deforme al moverlo. Si el modelo no coincide en tamaño, revisa las medidas del equipo o las fotos.</p>
+    <div id="iosArSlot"><p class="muted">Preparando el modelo 3D…</p></div>`;
+  el.hidden = false;
+  el.querySelector('[data-close]').onclick = () => { el.hidden = true; };
+  const canvas = el.querySelector('canvas.croquis');
+  const r = canvas.getBoundingClientRect();
+  if (r.width) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+    drawCroquis(ctx, m, 0, 0, r.width, r.height, { step: 0, views: 'both', frontLeft: frontLeftIn(app) });
+  }
+  try {
+    const blob = await exportUSDZ(m);
+    if (app.machine !== m) return;
+    if (iosUsdzUrl) URL.revokeObjectURL(iosUsdzUrl);
+    iosUsdzUrl = URL.createObjectURL(blob);
+    app._lastUsdz = blob; // usado por las pruebas automáticas
+    const slot = el.querySelector('#iosArSlot');
+    slot.innerHTML = `<a id="iosArLink" rel="ar" href="${quickLookHref(iosUsdzUrl, m)}"><img src="${arButtonImage('Abrir en realidad aumentada')}" alt="Abrir en realidad aumentada"></a>
+      <p class="muted">Modelo listo (${Math.max(1, Math.round(blob.size / 1024))} kB).${supportsQuickLook() ? '' : ' Este navegador no abre el visor de Apple: usa Safari en un iPhone o iPad.'}</p>
+      <a class="button" download="${escapeHtml(m.id)}.usdz" href="${iosUsdzUrl}">Descargar modelo (.usdz)</a>`;
+  } catch (err) {
+    console.error(err);
+    el.querySelector('#iosArSlot').innerHTML = `<p class="crit">No se pudo generar el modelo: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
 function fillSelect(selectedId) {
   $('machineSelect').innerHTML = machineIndex.map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = '8';
+export const APP_VERSION = '9';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

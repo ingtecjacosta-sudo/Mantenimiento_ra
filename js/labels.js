@@ -152,7 +152,7 @@ export class ComponentLabel {
         drawWrapped(ctx, c.description, 24, y, W - 48, 28, H - 50);
       }
       ctx.font = font(18, 500); ctx.fillStyle = COLORS.accent;
-      ctx.fillText('Gatillo / pellizco: abrir ficha completa', 24, H - 20);
+      ctx.fillText(this.footer ?? 'Gatillo / pellizco: abrir ficha completa', 24, H - 20);
     });
   }
 
