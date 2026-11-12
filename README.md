@@ -21,13 +21,14 @@ WebXR necesita HTTPS (o `localhost`).
 
 **En la PC** (modo maqueta):
 ```bash
-cd quest-mantenimiento
+git clone https://github.com/ingtecjacosta-sudo/Mantenimiento_ra.git
+cd Mantenimiento_ra
 python3 -m http.server 8080
 # abrir http://localhost:8080
 ```
 
 **En el Quest 3**, cualquiera de estas opciones:
-1. **GitHub Pages** (lo más simple): en el repositorio, *Settings → Pages → Deploy from branch* y abrir `https://<usuario>.github.io/<repo>/quest-mantenimiento/` en el navegador del Quest.
+1. **GitHub Pages** (lo más simple): en el repositorio, *Settings → Pages → Deploy from a branch*, rama `main`, carpeta `/ (root)`. Luego abrir **https://ingtecjacosta-sudo.github.io/Mantenimiento_ra/** en el navegador del Quest o en Chrome del celular.
 2. **Por cable USB** con el servidor de arriba corriendo en la PC: `adb reverse tcp:8080 tcp:8080` y abrir `http://localhost:8080` en el Quest (requiere modo desarrollador).
 3. Cualquier hosting con HTTPS (Netlify, Vercel, un servidor interno con certificado).
 
