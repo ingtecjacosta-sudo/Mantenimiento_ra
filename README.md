@@ -36,6 +36,19 @@ Luego pulsa **Entrar en realidad mixta** y acepta los permisos (seguimiento del 
 
 > Recomendado: hacer la configuración del espacio del Quest (*Space Setup*) en el lugar de trabajo; mejora la detección del suelo y la estabilidad de las anclas.
 
+## Cargar un equipo desde una foto
+
+Sirve para armar un equipo nuevo (o completar uno existente) sin editar archivos, desde el celular o la PC.
+
+1. **+ Nuevo equipo**: nombre, medidas aproximadas (largo × ancho × alto) y horómetro. En un equipo existente usa **📷 Cargar foto**.
+2. **Tomar o elegir foto**: idealmente de costado, con toda la máquina en el cuadro y la cámara a media altura.
+3. Elige qué lado muestra la foto (izquierdo, derecho o frente) y toca **Calibrar**. Luego marca 3 puntos: el extremo delantero a nivel del suelo, el extremo trasero y el punto más alto.
+4. **+ Agregar componente** y toca la foto donde está la pieza; o elige uno de la lista y tócalo en la foto para ubicarlo.
+5. Con la calibración, la app calcula la **posición 3D** de cada componente y aparecen sus carteles en RA. La profundidad no se ve en una foto, así que el cartel queda sobre la cara visible del equipo. En la máquina real, **Registrar puntos** corrige los que haga falta: un punto registrado en RA siempre tiene prioridad sobre el de la foto.
+6. La ficha de cada componente tiene una pestaña **Foto** con la pieza marcada.
+
+La foto queda guardada en el dispositivo y **viaja dentro del JSON** al exportar, para compartir el equipo completo con otros celulares o visores.
+
 ## Uso en el celular Android
 
 **Requisitos**: Chrome actualizado y un celular compatible con ARCore (la mayoría de gama media/alta desde 2019). Si hace falta, instala **"Servicios de Google Play para RA"** desde Play Store. La app tiene que abrirse desde una dirección **HTTPS** (por ejemplo GitHub Pages, ver arriba).
@@ -105,6 +118,7 @@ Cada equipo es un JSON en `data/`, listado en `data/machines.json`. Ejemplo: `da
 | `js/labels.js` | Carteles de componentes (marcador, línea guía, panel compacto y detallado) |
 | `js/ui.js` | Ficha completa, menú flotante y mensajes dentro del visor |
 | `js/overlay.js` | Interfaz táctil sobre la cámara (modo celular) |
+| `js/photo.js` | Foto de referencia: editor, calibración y cálculo de posiciones 3D |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app (PWA) y uso sin conexión |
 | `js/panel.js` | Paneles 2D (canvas) con botones clicables en 3D |
 | `js/data.js` | Estado de mantenimiento, guardado local y exportación |

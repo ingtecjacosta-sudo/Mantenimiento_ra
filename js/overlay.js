@@ -58,10 +58,12 @@ export class ArOverlay {
     this.tab = 'resumen';
     this.step = 0;
     this.sheet.hidden = false;
+    document.body.classList.add('sheet-open');
     this.renderSheet();
   }
   closeSheet() {
     this.sheet.hidden = true;
+    document.body.classList.remove('sheet-open');
     if (this.label) this.label.highlight = false;
     this.label = null;
   }
@@ -109,6 +111,8 @@ export class ArOverlay {
     const label = this.label, c = label.comp, m = this.app.machine;
     const st = STATUS[label.status];
     const tabs = [['resumen', 'Resumen'], ['proc', 'Pasos'], ['check', 'Checklist'], ['parts', 'Repuestos']];
+    if (this.app.photoUrl && Array.isArray(c.photo)) tabs.push(['foto', 'Foto']);
+    else if (this.tab === 'foto') this.tab = 'resumen';
     let body = '';
     if (this.tab === 'resumen') {
       const mi = maintenanceInfo(c, m);
@@ -144,6 +148,8 @@ export class ArOverlay {
           <p class="${done === items.length ? 'ok' : 'muted'}">${done}/${items.length} completados</p>
           ${c.maintenance ? `<button data-act="service" class="primary wide" ${done < items.length ? 'disabled' : ''}>Registrar servicio (${hoursText(m.hourMeter)})</button>` : ''}`;
       }
+    } else if (this.tab === 'foto') {
+      body = `<div class="sheet-photo"><img src="${this.app.photoUrl}" alt="Foto del equipo"><i class="${label.status}" style="left:${c.photo[0] * 100}%;top:${c.photo[1] * 100}%"></i></div>`;
     } else {
       const parts = c.parts ?? [];
       body = parts.length

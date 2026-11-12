@@ -1,8 +1,8 @@
 // Service worker: permite instalar la app y abrirla sin conexión (después de la primera carga).
-const CACHE = 'mant-ra-v1';
+const CACHE = 'mant-ra-v2';
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
-  'js/main.js', 'js/panel.js', 'js/labels.js', 'js/ui.js', 'js/overlay.js', 'js/data.js', 'js/preview.js',
+  'js/main.js', 'js/panel.js', 'js/labels.js', 'js/ui.js', 'js/overlay.js', 'js/data.js', 'js/preview.js', 'js/photo.js',
   'data/machines.json', 'data/excavadora-20t.json',
 ];
 

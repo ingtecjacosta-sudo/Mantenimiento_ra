@@ -16,6 +16,27 @@ export async function fetchJSON(url) {
   return res.json();
 }
 
+/** Copia local de un equipo editado en este dispositivo (componentes agregados, foto, etc.). */
+export function getLocalMachine(id) { return store.get(`machine:${id}`, null); }
+export function saveLocalMachine(machine) {
+  const copy = structuredClone({ ...machine, _original: undefined });
+  delete copy._original;
+  store.set(`machine:${machine.id}`, copy);
+  machine._original = structuredClone(copy);
+}
+
+/** Equipos creados en este dispositivo (no vienen en data/machines.json). */
+export function getCustomMachines() { return store.get('customMachines', []); }
+export function addCustomMachine(machine) {
+  const list = getCustomMachines().filter((m) => m.id !== machine.id);
+  list.push({ id: machine.id, name: machine.name, local: true });
+  store.set('customMachines', list);
+}
+export function removeCustomMachine(id) {
+  store.set('customMachines', getCustomMachines().filter((m) => m.id !== id));
+  store.del(`machine:${id}`);
+}
+
 /** Aplica lo que el técnico guardó en este visor: puntos registrados, servicios y horómetro. */
 export function applyLocalState(machine) {
   machine._original = structuredClone(machine);
@@ -53,6 +74,7 @@ export function setChecklist(machine, comp, values) { store.set(`${machine.id}:c
 
 export function resetLocalState(machine) {
   for (const k of ['points', 'service', 'hourMeter', 'anchor']) store.del(`${machine.id}:${k}`);
+  store.del(`machine:${machine.id}`);
   for (const c of machine.components) store.del(`${machine.id}:check:${c.id}`);
 }
 
@@ -93,9 +115,11 @@ export function exportMachine(machine) {
   out.components = machine.components.map((c) => {
     const o = out.components.find((x) => x.id === c.id) ?? structuredClone(c);
     o.position = c.position ?? null;
+    if (c.photo) o.photo = c.photo;
     if (c.maintenance && o.maintenance) o.maintenance.lastServiceHours = c.maintenance.lastServiceHours;
     return o;
   });
+  for (const k of ['photoView', 'photoCalib']) if (machine[k] !== undefined) out[k] = machine[k];
   out.exportedAt = new Date().toISOString();
   return out;
 }

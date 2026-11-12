@@ -6,10 +6,12 @@ import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { ComponentLabel } from './labels.js';
 import { DetailWindow, Toolbar, Hud } from './ui.js';
 import { ArOverlay } from './overlay.js';
-import { buildPreview, disposeTree } from './preview.js';
+import { buildPreview, disposeTree, previewBounds } from './preview.js';
+import { PhotoEditor, savePhoto, loadPhoto, photoTo3D, blobToDataURL, dataURLToBlob } from './photo.js';
 import {
   store, fetchJSON, applyLocalState, savePoint, saveService, saveHourMeter, setChecklist,
   resetLocalState, exportMachine, downloadJSON,
+  getLocalMachine, saveLocalMachine, getCustomMachines, addCustomMachine, removeCustomMachine,
 } from './data.js';
 
 // --- Parámetros de visibilidad de carteles -----------------------------------
@@ -32,7 +34,12 @@ const state = {
   placeYawOffset: 0,
   handheld: false,       // celular / tablet (AR con la cámara, interfaz táctil)
 };
-const app = { state, machine: null, labels: [], actions: {} };
+const app = {
+  state, machine: null, labels: [], actions: {},
+  photoUrl: null,          // foto de referencia del equipo actual (blob URL)
+  photoImage: null,        // la misma foto como imagen, para dibujarla en los paneles 3D
+  arPoints: () => store.get(`${app.machine?.id}:points`, {}),
+};
 let machineIndex = [];
 
 // --- Escena ------------------------------------------------------------------
@@ -77,6 +84,7 @@ const toolbar = new Toolbar(app);
 const detail = new DetailWindow(app);
 scene.add(hud.mesh, toolbar.mesh, detail.mesh);
 const overlay = new ArOverlay(app, document.getElementById('arOverlay'));
+const photoEditor = new PhotoEditor(app, document.getElementById('photoEditor'));
 
 /** Mensaje breve: en el visor como panel 3D, en el celular sobre la cámara. */
 function notify(text, seconds = 4, color) {
@@ -250,7 +258,8 @@ function rayAction() {
 function openDetail(label) {
   for (const l of app.labels) l.highlight = false;
   label.highlight = true;
-  if (state.handheld) overlay.openSheet(label);
+  // Celular (en RA o con pantalla angosta): ficha como hoja táctil; visor/PC: panel 3D.
+  if (state.handheld || (!state.xr && window.innerWidth < 700)) overlay.openSheet(label);
   else detail.open(label, camPos, camQuat);
 }
 
@@ -459,7 +468,51 @@ Object.assign(app.actions, {
   toggleAlertsOnly: () => { state.alertsOnly = !state.alertsOnly; syncDomButtons(); },
   toggleGuide: () => { state.showGuide = !state.showGuide; applyVisibility(); },
   exitXR: () => renderer.xr.getSession()?.end(),
-  exportJSON: () => downloadJSON(exportMachine(app.machine), `${app.machine.id}.json`),
+  exportJSON: async () => {
+    const out = exportMachine(app.machine);
+    const blob = await loadPhoto(app.machine.id);
+    if (blob) out.photoData = await blobToDataURL(blob); // la foto viaja dentro del JSON
+    downloadJSON(out, `${app.machine.id}.json`);
+  },
+  openPhotoEditor: () => photoEditor.open(),
+  setPhoto: async (blob) => {
+    await savePhoto(app.machine.id, blob);
+    await loadPhotoFor(app.machine);
+  },
+  /** Llamado por el editor de foto cada vez que cambia algo del equipo. */
+  machineEdited: ({ rebuild = false } = {}) => {
+    applyPhotoPositions(app.machine);
+    saveLocalMachine(app.machine);
+    if (!machineIndex.some((m) => m.id === app.machine.id && !m.local) && !getCustomMachines().some((m) => m.id === app.machine.id)) addCustomMachine(app.machine);
+    if (rebuild) rebuildLabels();
+    else for (const l of app.labels) { l.setPosition(l.comp.position); l.redraw(); }
+    refreshUI();
+    updateDomInfo();
+  },
+  newMachine: async () => {
+    const name = prompt('Nombre del equipo (ej. "Cargador frontal CF-02"):');
+    if (!name?.trim()) return;
+    const dimsTxt = prompt('Medidas aproximadas en metros: largo x ancho x alto', '6 x 2.5 x 3') ?? '';
+    const nums = dimsTxt.replace(/,/g, '.').match(/\d+(\.\d+)?/g)?.map(Number) ?? [];
+    const [L, W, H] = [nums[0] || 6, nums[1] || 2.5, nums[2] || 3];
+    const hours = Number(prompt('Horómetro actual (h):', '0')) || 0;
+    const machine = {
+      id: `eq-${Date.now().toString(36)}`,
+      name: name.trim(),
+      hourMeter: hours,
+      dimensions: [W, H, L],
+      reference: { description: 'el suelo, al centro del frente del equipo', offset: [0, 0, L / 2] },
+      preview: [{ size: [W, H, L], pos: [0, H / 2, 0], color: '#d9a400' }],
+      photoView: 'izq',
+      components: [],
+    };
+    saveLocalMachine(machine);
+    addCustomMachine(machine);
+    machineIndex.push({ id: machine.id, name: machine.name, local: true });
+    fillSelect(machine.id);
+    await loadMachine(machineIndex.at(-1));
+    photoEditor.open();
+  },
   registerService: (label) => {
     const c = label.comp;
     c.maintenance.lastServiceHours = app.machine.hourMeter;
@@ -474,9 +527,42 @@ Object.assign(app.actions, {
 });
 
 // --- Carga del equipo ------------------------------------------------------------
+/** Componentes marcados en la foto → posición 3D (salvo los ya ubicados en RA, que son más precisos). */
+function applyPhotoPositions(machine) {
+  if (!machine.photoCalib) return;
+  const bounds = previewBounds(machine);
+  const points = store.get(`${machine.id}:points`, {});
+  for (const c of machine.components) {
+    if (!Array.isArray(c.photo) || Array.isArray(points[c.id])) continue;
+    const p = photoTo3D(machine, c.photo, bounds);
+    if (p) c.position = p;
+  }
+}
+
+function rebuildLabels() {
+  for (const l of app.labels) { machineRoot.remove(l.group); l.dispose(); }
+  app.labels = app.machine.components.map((c) => new ComponentLabel(c, app.machine));
+  for (const l of app.labels) machineRoot.add(l.group);
+  if (state.registerIndex >= app.labels.length) state.registerIndex = 0;
+}
+
+async function loadPhotoFor(machine) {
+  if (app.photoUrl) URL.revokeObjectURL(app.photoUrl);
+  app.photoUrl = null;
+  app.photoImage = null;
+  const blob = await loadPhoto(machine.id);
+  if (!blob || app.machine !== machine) return;
+  app.photoUrl = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => { app.photoImage = img; detail.render(); };
+  img.src = app.photoUrl;
+  updateDomInfo();
+}
+
 async function loadMachine(entry) {
-  const data = entry.data ?? await fetchJSON(entry.file);
+  const data = getLocalMachine(entry.id) ?? entry.data ?? await fetchJSON(entry.file);
   const machine = applyLocalState(data);
+  applyPhotoPositions(machine);
   app.machine = machine;
   store.set('lastMachine', machine.id);
 
@@ -492,9 +578,11 @@ async function loadMachine(entry) {
   ghost.position.copy(refOffset).negate();
   reticleGhost.add(ghost);
 
-  app.labels = machine.components.map((c) => new ComponentLabel(c, machine));
-  for (const l of app.labels) machineRoot.add(l.group);
+  rebuildLabels();
   detail.close();
+  overlay.closeSheet();
+  loadPhotoFor(machine);
+  if (photoEditor.isOpen) photoEditor.render();
   refreshUI();
   applyVisibility();
   updateDomInfo();
@@ -655,6 +743,7 @@ async function enterXR() {
   machineRoot.quaternion.identity();
   hud.follower.reset();
   toolbar.follower.reset();
+  photoEditor.close();
   document.body.classList.add('in-xr');
   document.body.classList.toggle('handheld', state.handheld);
   applyVisibility();
@@ -692,6 +781,7 @@ function updateDomInfo() {
   $('hourMeter').value = m.hourMeter;
   const alerts = app.labels.filter((l) => l.status !== 'ok');
   const missing = m.components.filter((c) => !Array.isArray(c.position)).length;
+  $('btnPhoto').textContent = app.photoUrl ? '📷 Editar foto' : '📷 Cargar foto';
   $('machineInfo').innerHTML = `${m.components.length} componentes · `
     + (alerts.length ? `<b class="warn">${alerts.length} con alerta</b>` : '<b class="ok">sin alertas</b>')
     + (missing ? ` · ${missing} sin punto registrado` : '');
@@ -733,9 +823,23 @@ function setupDom() {
   $('btnShowAll').addEventListener('click', app.actions.toggleShowAll);
   $('btnAlerts').addEventListener('click', app.actions.toggleAlertsOnly);
   $('btnExport').addEventListener('click', app.actions.exportJSON);
+  $('btnPhoto').addEventListener('click', app.actions.openPhotoEditor);
+  $('btnNew').addEventListener('click', app.actions.newMachine);
   $('btnReset').addEventListener('click', async () => {
-    if (!confirm('¿Borrar puntos registrados, servicios y checklists guardados en este dispositivo para este equipo?')) return;
+    const custom = machineIndex.find((e) => e.id === app.machine.id)?.local;
+    if (custom) {
+      if (!confirm(`¿Eliminar el equipo "${app.machine.name}" de este dispositivo? (exporta el JSON antes si lo quieres conservar)`)) return;
+      resetLocalState(app.machine);
+      removeCustomMachine(app.machine.id);
+      await savePhoto(app.machine.id, null).catch(() => {});
+      machineIndex = machineIndex.filter((e) => e.id !== app.machine.id);
+      fillSelect(machineIndex[0].id);
+      await loadMachine(machineIndex[0]);
+      return;
+    }
+    if (!confirm('¿Volver a los datos originales de este equipo? Se borran puntos registrados, servicios, checklists, foto y componentes agregados en este dispositivo.')) return;
     resetLocalState(app.machine);
+    await savePhoto(app.machine.id, null).catch(() => {});
     await loadMachine(machineIndex.find((e) => e.id === app.machine.id) ?? machineIndex[0]);
   });
   $('btnPanel').addEventListener('click', () => document.body.classList.toggle('panel-collapsed'));
@@ -755,10 +859,16 @@ function setupDom() {
     try {
       const data = JSON.parse(await file.text());
       if (!data.id || !Array.isArray(data.components)) throw new Error('Falta "id" o "components"');
-      const entry = { id: data.id, name: data.name, data };
-      machineIndex = machineIndex.filter((m) => m.id !== data.id).concat(entry);
-      fillSelect(data.id);
-      await loadMachine(entry);
+      const { photoData, ...machine } = data;
+      if (photoData) await savePhoto(machine.id, await dataURLToBlob(photoData));
+      saveLocalMachine(machine);
+      const builtIn = machineIndex.find((m) => m.id === machine.id && !m.local);
+      if (!builtIn) {
+        addCustomMachine(machine);
+        machineIndex = machineIndex.filter((m) => m.id !== machine.id).concat({ id: machine.id, name: machine.name, local: true });
+      }
+      fillSelect(machine.id);
+      await loadMachine(machineIndex.find((m) => m.id === machine.id));
     } catch (err) {
       alert(`JSON inválido: ${err.message}`);
     }
@@ -800,6 +910,7 @@ async function init() {
   checkXR();
   try {
     machineIndex = await fetchJSON('data/machines.json');
+    for (const m of getCustomMachines()) if (!machineIndex.some((x) => x.id === m.id)) machineIndex.push(m);
     const params = new URLSearchParams(location.search);
     if (params.get('data')) machineIndex.unshift({ id: 'url', name: 'Equipo desde URL', file: params.get('data') });
     const wanted = params.get('equipo') ?? store.get('lastMachine', null);
@@ -816,4 +927,5 @@ async function init() {
 init();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 app.openDetail = openDetail;
+app._debug = { camera, controls };
 window.__app = app; // útil para depurar desde la consola
