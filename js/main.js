@@ -83,8 +83,20 @@ const hud = new Hud();
 const toolbar = new Toolbar(app);
 const detail = new DetailWindow(app);
 scene.add(hud.mesh, toolbar.mesh, detail.mesh);
-const overlay = new ArOverlay(app, document.getElementById('arOverlay'));
-const photoEditor = new PhotoEditor(app, document.getElementById('photoEditor'));
+/** Si la página guardada en el navegador es de una versión anterior, crea las secciones que falten. */
+function ensureEl(id, html) {
+  let el = document.getElementById(id);
+  if (!el) {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html.trim();
+    el = tpl.content.firstElementChild;
+    document.body.appendChild(el);
+  }
+  return el;
+}
+const overlay = new ArOverlay(app, ensureEl('arOverlay', `<div id="arOverlay"><div id="arTop" class="ui"></div><div id="arCross" aria-hidden="true"></div>
+  <div id="arToast"></div><div id="arBottom" class="ui"></div><section id="arSheet" class="ui" hidden></section></div>`));
+const photoEditor = new PhotoEditor(app, ensureEl('photoEditor', '<section id="photoEditor" hidden></section>'));
 
 /** Mensaje breve: en el visor como panel 3D, en el celular sobre la cámara. */
 function notify(text, seconds = 4, color) {
@@ -781,7 +793,7 @@ function updateDomInfo() {
   $('hourMeter').value = m.hourMeter;
   const alerts = app.labels.filter((l) => l.status !== 'ok');
   const missing = m.components.filter((c) => !Array.isArray(c.position)).length;
-  $('btnPhoto').textContent = app.photoUrl ? '📷 Editar foto' : '📷 Cargar foto';
+  if ($('btnPhoto')) $('btnPhoto').textContent = app.photoUrl ? '📷 Editar foto' : '📷 Cargar foto';
   $('machineInfo').innerHTML = `${m.components.length} componentes · `
     + (alerts.length ? `<b class="warn">${alerts.length} con alerta</b>` : '<b class="ok">sin alertas</b>')
     + (missing ? ` · ${missing} sin punto registrado` : '');
@@ -819,13 +831,13 @@ async function checkXR() {
 }
 
 function setupDom() {
-  $('btnXR').addEventListener('click', () => enterXR().catch((e) => { $('xrStatus').textContent = `Error al iniciar XR: ${e.message}`; }));
-  $('btnShowAll').addEventListener('click', app.actions.toggleShowAll);
-  $('btnAlerts').addEventListener('click', app.actions.toggleAlertsOnly);
-  $('btnExport').addEventListener('click', app.actions.exportJSON);
-  $('btnPhoto').addEventListener('click', app.actions.openPhotoEditor);
-  $('btnNew').addEventListener('click', app.actions.newMachine);
-  $('btnReset').addEventListener('click', async () => {
+  $('btnXR')?.addEventListener('click', () => enterXR().catch((e) => { $('xrStatus').textContent = `Error al iniciar XR: ${e.message}`; }));
+  $('btnShowAll')?.addEventListener('click', app.actions.toggleShowAll);
+  $('btnAlerts')?.addEventListener('click', app.actions.toggleAlertsOnly);
+  $('btnExport')?.addEventListener('click', app.actions.exportJSON);
+  $('btnPhoto')?.addEventListener('click', app.actions.openPhotoEditor);
+  $('btnNew')?.addEventListener('click', app.actions.newMachine);
+  $('btnReset')?.addEventListener('click', async () => {
     const custom = machineIndex.find((e) => e.id === app.machine.id)?.local;
     if (custom) {
       if (!confirm(`¿Eliminar el equipo "${app.machine.name}" de este dispositivo? (exporta el JSON antes si lo quieres conservar)`)) return;
@@ -842,9 +854,9 @@ function setupDom() {
     await savePhoto(app.machine.id, null).catch(() => {});
     await loadMachine(machineIndex.find((e) => e.id === app.machine.id) ?? machineIndex[0]);
   });
-  $('btnPanel').addEventListener('click', () => document.body.classList.toggle('panel-collapsed'));
-  $('machineSelect').addEventListener('change', (e) => loadMachine(machineIndex.find((m) => m.id === e.target.value)));
-  $('hourMeter').addEventListener('change', (e) => {
+  $('btnPanel')?.addEventListener('click', () => document.body.classList.toggle('panel-collapsed'));
+  $('machineSelect')?.addEventListener('change', (e) => loadMachine(machineIndex.find((m) => m.id === e.target.value)));
+  $('hourMeter')?.addEventListener('change', (e) => {
     const v = Number(e.target.value);
     if (!Number.isFinite(v) || v < 0) return;
     app.machine.hourMeter = v;
@@ -853,7 +865,7 @@ function setupDom() {
     refreshUI();
     updateDomInfo();
   });
-  $('fileInput').addEventListener('change', async (e) => {
+  $('fileInput')?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
@@ -904,8 +916,10 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
+export const APP_VERSION = '3';
+
 async function init() {
-  setupDom();
+  try { setupDom(); } catch (e) { console.error(e); }
   syncDomButtons();
   checkXR();
   try {
@@ -918,6 +932,7 @@ async function init() {
     fillSelect(entry.id);
     await loadMachine(entry);
     document.body.classList.add('ready');
+    const v = $('appVersion'); if (v) v.textContent = `versión ${APP_VERSION}`;
   } catch (e) {
     $('xrStatus').textContent = `No se pudo cargar el equipo: ${e.message}`;
     console.error(e);

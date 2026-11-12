@@ -1,5 +1,5 @@
 // Service worker: permite instalar la app y abrirla sin conexión (después de la primera carga).
-const CACHE = 'mant-ra-v2';
+const CACHE = 'mant-ra-v3';
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
   'js/main.js', 'js/panel.js', 'js/labels.js', 'js/ui.js', 'js/overlay.js', 'js/data.js', 'js/preview.js', 'js/photo.js',
@@ -28,7 +28,8 @@ self.addEventListener('fetch', (e) => {
   }
   // Archivos propios: primero la red (para recibir actualizaciones), caché si no hay conexión.
   if (url.origin === self.location.origin) {
-    e.respondWith(fetch(req).then((res) => {
+    // 'no-cache' obliga a preguntar al servidor: evita mezclar archivos viejos y nuevos.
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req, { ignoreSearch: true })));

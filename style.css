@@ -165,3 +165,4 @@ body.editing #panel { display: none; }
 body.sheet-open:not(.in-xr) #arOverlay { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; color: var(--text); }
 body.sheet-open:not(.in-xr) #arTop, body.sheet-open:not(.in-xr) #arBottom,
 body.sheet-open:not(.in-xr) #arCross, body.sheet-open:not(.in-xr) #arToast { display: none; }
+.version { margin: 0; color: var(--muted); font-size: 11px; text-align: right; }

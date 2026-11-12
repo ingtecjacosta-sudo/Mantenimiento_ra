@@ -57,6 +57,7 @@
         <button id="btnNew">+ Nuevo equipo</button>
       </div>
       <button id="btnReset" class="link">Restablecer / eliminar este equipo</button>
+      <p id="appVersion" class="version"></p>
 
       <details>
         <summary>Cómo se usa en el Quest 3</summary>
@@ -86,6 +87,18 @@
     <section id="arSheet" class="ui" hidden></section>
   </div>
 
+  <script>
+    // Si algo falla al cargar, mostrarlo en pantalla en vez de dejar los botones muertos.
+    (function () {
+      function show(msg) {
+        var el = document.getElementById('xrStatus');
+        if (el) { el.style.color = '#ff5d55'; el.textContent = 'Error: ' + msg + ' — recarga la página (si sigue, borra los datos del sitio en Chrome).'; }
+      }
+      window.addEventListener('error', function (e) { show(e.message || 'no se pudo cargar un archivo'); }, true);
+      window.addEventListener('unhandledrejection', function (e) { show((e.reason && e.reason.message) || String(e.reason)); });
+      setTimeout(function () { if (!document.body.classList.contains('ready')) show('la app no terminó de cargar (¿sin internet?)'); }, 12000);
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
