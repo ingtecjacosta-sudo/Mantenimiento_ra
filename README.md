@@ -1,8 +1,8 @@
-# Mantenimiento RA — Meta Quest 3
+# Mantenimiento RA — Meta Quest 3 y celular Android
 
 App de **realidad mixta** para mantenimiento de maquinaria pesada. Con el Quest 3 ves la máquina real (passthrough) y, a medida que miras las piezas, aparecen **carteles flotantes** con la información de cada componente: estado, próximo servicio, especificaciones, procedimiento paso a paso, checklist y repuestos.
 
-Es una app **WebXR**: se abre en el navegador del Quest (no hay que instalar APK ni usar Unity). También funciona en la PC como maqueta 3D para preparar y revisar los datos.
+Funciona en el **Meta Quest 3** (realidad mixta) y en **celulares Android** con la cámara (realidad aumentada con ARCore). Es una app **WebXR**: se abre en el navegador del Quest (no hay que instalar APK ni usar Unity). También funciona en la PC como maqueta 3D para preparar y revisar los datos.
 
 ## Qué hace
 
@@ -34,6 +34,20 @@ python3 -m http.server 8080
 Luego pulsa **Entrar en realidad mixta** y acepta los permisos (seguimiento del espacio / anclas).
 
 > Recomendado: hacer la configuración del espacio del Quest (*Space Setup*) en el lugar de trabajo; mejora la detección del suelo y la estabilidad de las anclas.
+
+## Uso en el celular Android
+
+**Requisitos**: Chrome actualizado y un celular compatible con ARCore (la mayoría de gama media/alta desde 2019). Si hace falta, instala **"Servicios de Google Play para RA"** desde Play Store. La app tiene que abrirse desde una dirección **HTTPS** (por ejemplo GitHub Pages, ver arriba).
+
+**Instalarla como app**: abre la dirección en Chrome → menú ⋮ → **Instalar app** (o *Agregar a la pantalla principal*). Queda un ícono como cualquier app y funciona sin conexión después de la primera carga.
+
+1. Toca **Entrar en realidad aumentada** y acepta el permiso de cámara.
+2. Mueve el celular despacio apuntando al suelo hasta que aparezca la retícula naranja.
+3. Centra la **mira** en el punto de referencia (en la excavadora de ejemplo: el suelo al centro del frente de las orugas) y toca **Ubicar aquí**. Gira con ⟲/⟳ si el contorno no coincide (activa **Guía 3D** para verlo).
+4. Recorre la máquina con la cámara: aparecen los carteles. **Toca un cartel** para abrir la ficha (resumen, pasos, checklist, repuestos).
+5. **Registrar puntos**: apunta la mira a cada pieza (o acerca el celular a ella) y toca **Marcar**.
+
+> En el celular no hay anclas persistentes: hay que ubicar el equipo cada vez que entras. Los puntos registrados sí quedan guardados.
 
 ## Uso en el visor
 
@@ -89,6 +103,8 @@ Cada equipo es un JSON en `data/`, listado en `data/machines.json`. Ejemplo: `da
 | `js/main.js` | Escena, sesión XR, controles y manos, ubicación, anclas, registro de puntos |
 | `js/labels.js` | Carteles de componentes (marcador, línea guía, panel compacto y detallado) |
 | `js/ui.js` | Ficha completa, menú flotante y mensajes dentro del visor |
+| `js/overlay.js` | Interfaz táctil sobre la cámara (modo celular) |
+| `manifest.webmanifest`, `sw.js`, `icons/` | Instalación como app (PWA) y uso sin conexión |
 | `js/panel.js` | Paneles 2D (canvas) con botones clicables en 3D |
 | `js/data.js` | Estado de mantenimiento, guardado local y exportación |
 | `js/preview.js` | Maqueta / contorno guía a partir del JSON |

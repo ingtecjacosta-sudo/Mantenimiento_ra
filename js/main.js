@@ -5,6 +5,7 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { ComponentLabel } from './labels.js';
 import { DetailWindow, Toolbar, Hud } from './ui.js';
+import { ArOverlay } from './overlay.js';
 import { buildPreview, disposeTree } from './preview.js';
 import {
   store, fetchJSON, applyLocalState, savePoint, saveService, saveHourMeter, setChecklist,
@@ -15,6 +16,8 @@ import {
 const FOCUS_ANGLE = 14;      // grados: el cartel que miras de frente se expande
 const COMPACT_ANGLE = 42;    // grados: carteles compactos dentro de este cono
 const MAX_COMPACT = 10;      // máximo de carteles compactos simultáneos (modo Auto)
+
+const FORCE_HANDHELD = new URLSearchParams(location.search).has('celular'); // para pruebas
 
 // --- Estado global -------------------------------------------------------------
 const state = {
@@ -27,6 +30,7 @@ const state = {
   showGuide: false,
   registerIndex: 0,
   placeYawOffset: 0,
+  handheld: false,       // celular / tablet (AR con la cámara, interfaz táctil)
 };
 const app = { state, machine: null, labels: [], actions: {} };
 let machineIndex = [];
@@ -72,6 +76,17 @@ const hud = new Hud();
 const toolbar = new Toolbar(app);
 const detail = new DetailWindow(app);
 scene.add(hud.mesh, toolbar.mesh, detail.mesh);
+const overlay = new ArOverlay(app, document.getElementById('arOverlay'));
+
+/** Mensaje breve: en el visor como panel 3D, en el celular sobre la cámara. */
+function notify(text, seconds = 4, color) {
+  if (state.handheld) overlay.toast(text, seconds, color);
+  else hud.show(text, seconds, color);
+}
+function refreshUI() {
+  toolbar.render();
+  if (state.handheld) overlay.render();
+}
 
 // Retícula de ubicación + guía fantasma del equipo
 const reticle = new THREE.Group();
@@ -101,6 +116,8 @@ const camQuat = new THREE.Quaternion();
 const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3(), tmpM = new THREE.Matrix4();
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const raycaster = new THREE.Raycaster();
+let viewerHitSource = null;                       // hit-test desde el centro de la pantalla (celular)
+const viewerHit = { has: false, matrix: new THREE.Matrix4() };
 
 // --- Controles / manos ---------------------------------------------------------
 const controllers = [];
@@ -140,6 +157,7 @@ let activeController = null;
 }
 
 function onControllerConnected(c, source) {
+  if (source.targetRayMode === 'screen') return; // toques en pantalla del celular: se manejan aparte
   c.userData.inputSource = source;
   c.userData.ray.visible = true;
   if (!activeController || source.handedness === 'right') activeController = c;
@@ -199,14 +217,30 @@ function pick() {
 function activate(hit) {
   const o = hit.object;
   const panel = o.userData.panel;
-  if (panel && panel.regions.length && panel.click(hit.uv)) { toolbar.render(); return true; }
+  if (panel && panel.regions.length && panel.click(hit.uv)) { refreshUI(); return true; }
   if (o.userData.label) { openDetail(o.userData.label); return true; }
   return !!panel?.consumesClicks;
 }
 
 function onSelect(c) {
+  if (state.handheld || !c.userData.inputSource) return;
   activeController = c;
   setRayFromController(c);
+  rayAction();
+}
+
+/** Toque en la pantalla del celular: rayo desde el punto tocado. */
+function onScreenSelect(e) {
+  if (!state.handheld) return;
+  const pose = e.frame.getPose(e.inputSource.targetRaySpace, renderer.xr.getReferenceSpace());
+  if (!pose) return;
+  tmpM.fromArray(pose.transform.matrix);
+  raycaster.ray.origin.setFromMatrixPosition(tmpM);
+  raycaster.ray.direction.set(0, 0, -1).transformDirection(tmpM);
+  rayAction();
+}
+
+function rayAction() {
   const hit = pick();
   if (hit && activate(hit)) return;
   if (state.mode === 'place' && reticle.visible) confirmPlacement();
@@ -216,7 +250,8 @@ function onSelect(c) {
 function openDetail(label) {
   for (const l of app.labels) l.highlight = false;
   label.highlight = true;
-  detail.open(label, camPos, camQuat);
+  if (state.handheld) overlay.openSheet(label);
+  else detail.open(label, camPos, camQuat);
 }
 
 // --- Ubicación del equipo (alinear el modelo con la máquina real) -------------
@@ -230,20 +265,34 @@ function startPlace() {
   state.mode = 'place';
   state.placeYawOffset = 0;
   reticleGhost.visible = true;
-  hud.show('Apunta al punto de referencia en el suelo y presiona el gatillo', 6);
-  toolbar.render();
+  notify(state.handheld ? 'Apunta la mira al punto de referencia y toca "Ubicar aquí"' : 'Apunta al punto de referencia en el suelo y presiona el gatillo', 6);
+  refreshUI();
+}
+
+/** Punto apuntado con la mira central del celular. */
+function handheldAim(out, floorFallback) {
+  if (viewerHit.has) { out.setFromMatrixPosition(viewerHit.matrix); return true; }
+  raycaster.ray.origin.copy(camPos);
+  raycaster.ray.direction.set(0, 0, -1).applyQuaternion(camQuat);
+  if (floorFallback) return !!raycaster.ray.intersectPlane(floorPlane, out) && out.distanceTo(camPos) < 15;
+  out.copy(camPos).addScaledVector(raycaster.ray.direction, 0.25); // acercar el celular a la pieza
+  return true;
 }
 
 function updatePlacement() {
-  const c = activeController;
-  if (!c?.userData.inputSource) { reticle.visible = false; return; }
   let ok = false;
-  if (c.userData.hasHit) {
-    tmpV.setFromMatrixPosition(c.userData.hitMatrix);
-    ok = true;
+  if (state.handheld) {
+    ok = handheldAim(tmpV, true);
   } else {
-    setRayFromController(c);
-    ok = !!raycaster.ray.intersectPlane(floorPlane, tmpV) && tmpV.distanceTo(raycaster.ray.origin) < 30;
+    const c = activeController;
+    if (!c?.userData.inputSource) { reticle.visible = false; return; }
+    if (c.userData.hasHit) {
+      tmpV.setFromMatrixPosition(c.userData.hitMatrix);
+      ok = true;
+    } else {
+      setRayFromController(c);
+      ok = !!raycaster.ray.intersectPlane(floorPlane, tmpV) && tmpV.distanceTo(raycaster.ray.origin) < 30;
+    }
   }
   reticle.visible = ok;
   if (!ok) return;
@@ -265,8 +314,8 @@ function confirmPlacement() {
   reticle.userData.init = false;
   dropAnchor();
   anchorDueAt = performance.now() + 300;
-  hud.show('Equipo ubicado. Mira las piezas para ver sus carteles.', 4, '#3fb950');
-  toolbar.render();
+  notify('Equipo ubicado. Mira las piezas para ver sus carteles.', 4, '#3fb950');
+  refreshUI();
 }
 
 /** Gira el equipo alrededor del punto de referencia (afinar la alineación). */
@@ -304,7 +353,7 @@ async function createAnchor(frame) {
       const session = renderer.xr.getSession();
       if (old && old !== uuid) session?.deletePersistentAnchor?.(old).catch(() => {});
       store.set(key, uuid);
-      hud.show('Posición guardada: la próxima vez se ubica sola', 3, '#3fb950');
+      notify('Posición guardada: la próxima vez se ubica sola', 3, '#3fb950');
     }
   } catch (e) {
     console.warn('No se pudo crear el ancla', e);
@@ -318,8 +367,8 @@ async function restoreAnchor(session) {
     anchor = await session.restorePersistentAnchor(uuid);
     state.placed = true;
     state.mode = 'view';
-    hud.show('Equipo ubicado desde la última sesión. Usa "Ubicar equipo" si no coincide.', 5, '#3fb950');
-    toolbar.render();
+    notify('Equipo ubicado desde la última sesión. Usa "Ubicar equipo" si no coincide.', 5, '#3fb950');
+    refreshUI();
     return true;
   } catch (e) {
     console.warn('Ancla no encontrada', e);
@@ -330,16 +379,23 @@ async function restoreAnchor(session) {
 
 // --- Registro de puntos de componentes ----------------------------------------
 function startRegister() {
-  if (!state.placed) { hud.show('Primero ubica el equipo', 3, '#e3b341'); return; }
+  if (!state.placed) { notify('Primero ubica el equipo', 3, '#e3b341'); return; }
   detail.close();
   state.mode = 'register';
   const firstMissing = app.machine.components.findIndex((c) => !Array.isArray(c.position));
   state.registerIndex = firstMissing >= 0 ? firstMissing : 0;
   state.showAll = true;
-  toolbar.render();
+  refreshUI();
 }
 
 function updateRegisterTip() {
+  if (state.handheld) {
+    handheldAim(tmpV, false);
+    if (tmpV.distanceTo(camPos) > 4) tmpV.copy(camPos).addScaledVector(raycaster.ray.direction, 0.25);
+    registerTip.position.copy(tmpV);
+    registerTip.visible = true;
+    return;
+  }
   const c = activeController;
   if (!c?.userData.inputSource) { registerTip.visible = false; return; }
   setRayFromController(c);
@@ -360,15 +416,16 @@ function registerPoint() {
   const local = machineRoot.worldToLocal(registerTip.position.clone());
   label.setPosition(local.toArray().map((v) => Math.round(v * 1000) / 1000));
   savePoint(app.machine, comp);
-  hud.show(`✔ ${comp.name} registrado`, 2.5, '#3fb950');
+  notify(`✔ ${comp.name} registrado`, 2.5, '#3fb950');
   if (state.registerIndex < app.machine.components.length - 1) state.registerIndex++;
-  toolbar.render();
+  refreshUI();
   updateDomInfo();
 }
 
 function registerStep(d) {
   const n = app.machine.components.length;
   state.registerIndex = (state.registerIndex + d + n) % n;
+  refreshUI();
 }
 
 function clearPoint() {
@@ -383,14 +440,20 @@ function finishRegister() {
   state.showAll = false;
   registerTip.visible = false;
   const missing = app.machine.components.filter((c) => !Array.isArray(c.position)).length;
-  hud.show(missing ? `Listo. ${missing} componentes sin punto.` : 'Todos los puntos registrados. Puedes exportar el JSON.', 4);
+  notify(missing ? `Listo. ${missing} componentes sin punto.` : 'Todos los puntos registrados. Puedes exportar el JSON.', 4);
+  refreshUI();
 }
 
 // --- Acciones (usadas por el menú del visor y por los botones de la PC) -------
 Object.assign(app.actions, {
   startPlace,
-  cancelPlace: () => { state.mode = 'view'; reticle.visible = false; reticle.userData.init = false; },
+  cancelPlace: () => { state.mode = 'view'; reticle.visible = false; reticle.userData.init = false; refreshUI(); },
   rotate,
+  placeHere: () => {
+    if (state.mode === 'place' && reticle.visible) confirmPlacement();
+    else notify('Aún no se detecta el suelo: mueve el celular despacio apuntando al piso', 3, '#e3b341');
+  },
+  markPoint: () => { if (state.mode === 'register' && registerTip.visible) registerPoint(); },
   startRegister, registerStep, clearPoint, finishRegister,
   toggleShowAll: () => { state.showAll = !state.showAll; syncDomButtons(); },
   toggleAlertsOnly: () => { state.alertsOnly = !state.alertsOnly; syncDomButtons(); },
@@ -404,9 +467,9 @@ Object.assign(app.actions, {
     setChecklist(app.machine, c, []);
     label.redraw();
     detail.render();
-    toolbar.render();
+    refreshUI();
     updateDomInfo();
-    hud.show(`Servicio registrado: ${c.name}`, 3, '#3fb950');
+    notify(`Servicio registrado: ${c.name}`, 3, '#3fb950');
   },
 });
 
@@ -432,7 +495,7 @@ async function loadMachine(entry) {
   app.labels = machine.components.map((c) => new ComponentLabel(c, machine));
   for (const l of app.labels) machineRoot.add(l.group);
   detail.close();
-  toolbar.render();
+  refreshUI();
   applyVisibility();
   updateDomInfo();
 }
@@ -442,7 +505,7 @@ function applyVisibility() {
   preview.guide.visible = state.arMode && state.showGuide;
   environment.visible = !state.arMode;
   scene.background = state.arMode ? null : DESKTOP_BG;
-  toolbar.mesh.visible = state.xr;
+  toolbar.mesh.visible = state.xr && !state.handheld;
   if (!state.xr) { hud.mesh.visible = false; reticle.visible = false; registerTip.visible = false; }
 }
 
@@ -477,8 +540,8 @@ function updateLabels(dt) {
       if (i === focus || i.l === registering) s = 'detail';
       else if (compactSet.has(i)) s = 'compact';
     }
-    if (detail.isOpen && detail.label === i.l) s = 'compact';
-    const scale = state.xr ? THREE.MathUtils.clamp(i.d / 2.2, 0.55, 2.6) : THREE.MathUtils.clamp(i.d / 3.2, 1, 6);
+    if ((detail.isOpen && detail.label === i.l) || overlay.label === i.l) s = 'compact';
+    const scale = state.xr ? THREE.MathUtils.clamp(i.d / 2.2, 0.55, 2.6) * (state.handheld ? 1.3 : 1) : THREE.MathUtils.clamp(i.d / 3.2, 1, 6);
     i.l.update(dt, camPos, s, scale);
   }
 }
@@ -495,7 +558,7 @@ renderer.setAnimationLoop((time, frame) => {
     if (detail.isOpen) detail.placeInFront(camPos, camQuat, 1.1, window.innerWidth > 900 ? 0.22 : 0);
   }
   updateLabels(dt);
-  hud.update(dt, camPos, camQuat, state.xr);
+  hud.update(dt, camPos, camQuat, state.xr && !state.handheld);
   renderer.render(scene, camera);
 });
 
@@ -504,6 +567,12 @@ function xrFrame(frame, dt) {
   const session = frame.session;
   const pose = frame.getViewerPose(ref);
   if (pose) { camPos.copy(pose.transform.position); camQuat.copy(pose.transform.orientation); }
+
+  viewerHit.has = false;
+  if (viewerHitSource) {
+    const hp = frame.getHitTestResults(viewerHitSource)[0]?.getPose(ref);
+    if (hp) { viewerHit.matrix.fromArray(hp.transform.matrix); viewerHit.has = true; }
+  }
 
   for (const c of controllers) {
     c.userData.hasHit = false;
@@ -557,16 +626,29 @@ async function enterXR() {
   const ar = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
   const mode = ar ? 'immersive-ar' : 'immersive-vr';
   const session = await navigator.xr.requestSession(mode, {
-    requiredFeatures: ['local-floor'],
-    optionalFeatures: ['hit-test', 'anchors', 'hand-tracking'],
+    optionalFeatures: ['local-floor', 'hit-test', 'anchors', 'hand-tracking', 'dom-overlay'],
+    domOverlay: { root: document.getElementById('arOverlay') },
   });
   savedDesktopView = { pos: camera.position.clone(), target: controls.target.clone() };
   session.addEventListener('end', onSessionEnd);
+  session.addEventListener('select', onScreenSelect);
+
+  // El Quest usa 'local-floor' (y = 0 en el suelo). Algunos celulares solo ofrecen 'local'.
+  const hasFloor = await session.requestReferenceSpace('local-floor').then(() => true, () => false);
+  renderer.xr.setReferenceSpaceType(hasFloor ? 'local-floor' : 'local');
+  floorPlane.constant = hasFloor ? 0 : 1.4; // sin suelo conocido: se estima 1,4 m bajo el celular
   await renderer.xr.setSession(session);
 
   state.xr = true;
   state.arMode = mode === 'immersive-ar';
+  state.handheld = session.interactionMode === 'screen-space' || !!session.domOverlayState || FORCE_HANDHELD;
   state.placed = false;
+  if (state.handheld && session.requestHitTestSource) {
+    try {
+      const viewer = await session.requestReferenceSpace('viewer');
+      viewerHitSource = await session.requestHitTestSource({ space: viewer });
+    } catch { viewerHitSource = null; }
+  }
   controls.enabled = false;
   machineRoot.visible = false;
   machineRoot.position.set(0, 0, 0);
@@ -574,9 +656,10 @@ async function enterXR() {
   hud.follower.reset();
   toolbar.follower.reset();
   document.body.classList.add('in-xr');
+  document.body.classList.toggle('handheld', state.handheld);
   applyVisibility();
   if (!(await restoreAnchor(session))) startPlace();
-  toolbar.render();
+  refreshUI();
 }
 
 let savedDesktopView = null;
@@ -593,7 +676,11 @@ function onSessionEnd() {
   machineRoot.quaternion.identity();
   if (savedDesktopView) { camera.position.copy(savedDesktopView.pos); controls.target.copy(savedDesktopView.target); }
   for (const c of controllers) onControllerDisconnected(c);
-  document.body.classList.remove('in-xr');
+  viewerHitSource?.cancel?.();
+  viewerHitSource = null;
+  overlay.closeSheet();
+  state.handheld = false;
+  document.body.classList.remove('in-xr', 'handheld');
   applyVisibility();
 }
 
@@ -626,15 +713,18 @@ async function checkXR() {
   const btn = $('btnXR'), status = $('xrStatus');
   btn.textContent = 'Visor XR no detectado';
   if (!window.isSecureContext) { status.textContent = 'WebXR necesita HTTPS (o localhost).'; return; }
-  if (!navigator.xr) { status.textContent = 'Este navegador no tiene WebXR. Ábrela en el navegador del Meta Quest 3. Aquí puedes probarla en modo PC.'; return; }
+  if (!navigator.xr) { status.textContent = 'Este navegador no tiene WebXR. Usa Chrome en Android o el navegador del Meta Quest 3. Aquí puedes probarla en modo maqueta.'; return; }
   const ar = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
   const vr = await navigator.xr.isSessionSupported('immersive-vr').catch(() => false);
   if (ar || vr) {
     btn.disabled = false;
-    btn.textContent = ar ? 'Entrar en realidad mixta' : 'Entrar en VR (entrenamiento)';
+    const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent) && !/OculusBrowser|Quest/i.test(navigator.userAgent);
+    btn.textContent = ar ? (mobile ? 'Entrar en realidad aumentada' : 'Entrar en realidad mixta') : 'Entrar en VR (entrenamiento)';
     status.textContent = ar ? 'Visor compatible con passthrough detectado.' : 'Sin passthrough: se usará la maqueta 3D.';
   } else {
-    status.textContent = 'No se detectó un visor XR. Puedes probar la app en modo PC.';
+    status.textContent = /Android/i.test(navigator.userAgent)
+      ? 'Este celular no tiene realidad aumentada WebXR. Instala/actualiza "Servicios de Google Play para RA" (ARCore) y usa Chrome.'
+      : 'No se detectó un visor XR. Puedes probar la app en modo maqueta.';
   }
 }
 
@@ -656,7 +746,7 @@ function setupDom() {
     app.machine.hourMeter = v;
     saveHourMeter(app.machine);
     for (const l of app.labels) l.redraw();
-    toolbar.render();
+    refreshUI();
     updateDomInfo();
   });
   $('fileInput').addEventListener('change', async (e) => {
@@ -724,4 +814,6 @@ async function init() {
 }
 
 init();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+app.openDetail = openDetail;
 window.__app = app; // útil para depurar desde la consola

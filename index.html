@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mantenimiento RA</title>
   <meta name="description" content="Asistente de mantenimiento de maquinaria pesada en realidad mixta para Meta Quest 3">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
   {
@@ -22,7 +26,7 @@
     <header>
       <div>
         <h1>Mantenimiento RA</h1>
-        <p class="sub">Carteles de componentes sobre la máquina real · Meta Quest 3</p>
+        <p class="sub">Carteles de componentes sobre la máquina real · Meta Quest 3 y celular Android</p>
       </div>
       <button id="btnPanel" class="icon" title="Mostrar/ocultar panel" aria-label="Mostrar u ocultar panel">☰</button>
     </header>
@@ -59,10 +63,20 @@
           <li>Apunta a un cartel y presiona el gatillo para abrir la <b>ficha</b>: especificaciones, procedimiento paso a paso, checklist y repuestos.</li>
           <li><b>Registrar puntos</b> (una vez por equipo): toca cada pieza con la punta del control y presiona el gatillo. Luego <b>Exportar JSON</b> para compartir la configuración.</li>
         </ol>
+        <p><b>En el celular Android:</b> pulsa <b>Entrar en realidad aumentada</b>, mueve el celular despacio apuntando al suelo, centra la mira en el punto de referencia y toca <b>Ubicar aquí</b>. Luego recorre la máquina con la cámara y <b>toca un cartel</b> para abrir su ficha.</p>
         <p>En la PC: arrastra para girar la vista, rueda para acercar, clic en un cartel para abrir la ficha.</p>
       </details>
     </div>
   </aside>
+
+  <!-- Interfaz táctil sobre la cámara (modo celular, WebXR DOM Overlay) -->
+  <div id="arOverlay">
+    <div id="arTop" class="ui"></div>
+    <div id="arCross" aria-hidden="true"></div>
+    <div id="arToast"></div>
+    <div id="arBottom" class="ui"></div>
+    <section id="arSheet" class="ui" hidden></section>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
