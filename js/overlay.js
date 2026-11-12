@@ -27,6 +27,16 @@ export class ArOverlay {
     });
   }
 
+  /** Indica si la mira está sobre el suelo detectado (solo actualiza el DOM cuando cambia). */
+  setAimStatus(ok) {
+    if (ok === this.aimOk) return;
+    this.aimOk = ok;
+    const el = this.root.querySelector('#arAim');
+    if (!el) return;
+    el.className = `aim ${ok ? 'ok' : ''}`;
+    el.textContent = ok ? '✔ Suelo detectado: toca el botón para marcar.' : 'Buscando el suelo… mueve el celular despacio apuntando al piso.';
+  }
+
   toast(text, seconds = 3, color = '#ffb000') {
     this.toastEl.textContent = text;
     this.toastEl.style.borderColor = color;
@@ -82,10 +92,15 @@ export class ArOverlay {
       `<button data-act="${act}" data-arg="${esc(arg)}" class="${cls}" ${disabled ? 'disabled' : ''}>${label}</button>`;
 
     if (state.mode === 'place') {
-      this.bottom.innerHTML = `<p>Apunta la <b>mira</b> a ${esc(machine.reference?.description ?? 'el centro del equipo, en el suelo')} y toca <b>Ubicar aquí</b>.
-        Mueve el celular despacio para que detecte el suelo.</p>
-        <div class="ar-row">${b('rotate', '⟲ 5°', { arg: 5 })}${b('placeHere', 'Ubicar aquí', { cls: 'primary' })}${b('rotate', '⟳ 5°', { arg: -5 })}</div>
-        ${state.placed ? `<div class="ar-row">${b('cancelPlace', 'Cancelar')}</div>` : ''}`;
+      const r = machine.reference ?? {};
+      const step = state.placeStep === 0
+        ? `<b>Punto 1 de 2:</b> centra la mira en el suelo justo debajo del extremo <b>MÁS ADELANTADO</b> del equipo${r.frontHint ? ` (${esc(r.frontHint)})` : ''}.`
+        : `<b>Punto 2 de 2:</b> camina y centra la mira en el suelo debajo del extremo <b>MÁS ATRASADO</b>${r.rearHint ? ` (${esc(r.rearHint)})` : ''}. El contorno azul se ajusta a la máquina.`;
+      this.bottom.innerHTML = `<p>${step}</p>
+        <p class="aim" id="arAim">Buscando el suelo… mueve el celular despacio apuntando al piso.</p>
+        <div class="ar-row">${b('placeHere', state.placeStep === 0 ? 'Marcar punto 1' : 'Marcar punto 2', { cls: 'primary' })}
+        ${state.placed || state.placeStep > 0 ? b('cancelPlace', 'Cancelar') : ''}</div>`;
+      this.aimOk = null;
     } else if (state.mode === 'register') {
       const comps = machine.components, comp = comps[state.registerIndex];
       const done = comps.filter((c) => Array.isArray(c.position)).length;

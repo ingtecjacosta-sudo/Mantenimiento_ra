@@ -64,7 +64,10 @@ La ficha de cada componente muestra las fotos donde está marcado. Las fotos que
 
 1. Toca **Entrar en realidad aumentada** y acepta el permiso de cámara.
 2. Mueve el celular despacio apuntando al suelo hasta que aparezca la retícula naranja.
-3. Centra la **mira** en el punto de referencia (en la excavadora de ejemplo: el suelo al centro del frente de las orugas) y toca **Ubicar aquí**. Gira con ⟲/⟳ si el contorno no coincide (activa **Guía 3D** para verlo).
+3. **Ubicar el equipo en 2 puntos**: centra la mira en el suelo justo debajo del extremo **más adelantado** del equipo (en la excavadora: bajo la punta del cucharón) y toca **Marcar punto 1**. Camina y centra la mira bajo el extremo **más atrasado** (bajo el contrapeso) y toca **Marcar punto 2**. El contorno azul se estira entre ambos puntos para que veas si coincide con la máquina.
+   - Con 2 puntos la app conoce la posición, la **orientación** y el **tamaño real**: no importa desde dónde estés parado. Si el largo medido no coincide con las medidas del equipo, se ajusta la escala y te avisa.
+   - Los extremos son los mismos que se marcan al calibrar las fotos, así los carteles calculados desde las fotos caen en su lugar.
+   - Solo se puede marcar cuando el celular **detectó el suelo** (mensaje verde ✔).
 4. Recorre la máquina con la cámara: aparecen los carteles. **Toca un cartel** para abrir la ficha (resumen, pasos, checklist, repuestos).
 5. **Registrar puntos**: apunta la mira a cada pieza (o acerca el celular a ella) y toca **Marcar**.
 
@@ -78,7 +81,7 @@ La ficha de cada componente muestra las fotos donde está marcado. Las fotos que
 | Girar el equipo al ubicarlo | Stick izquierdo/derecho | Botones *Girar* del menú |
 | Menú | Panel flotante abajo a la izquierda (te sigue cuando giras) | Igual |
 
-1. **Ubicar equipo** → apunta al punto de referencia y confirma.
+1. **Ubicar equipo** → marca con el gatillo el suelo bajo el extremo delantero y luego bajo el trasero.
 2. Recorre la máquina mirando las piezas.
 3. Abre la ficha de un componente, sigue el procedimiento y marca el checklist.
 4. Primera vez con un equipo nuevo: **Registrar puntos** y después **Exportar JSON** (desde el panel de la PC o del navegador).

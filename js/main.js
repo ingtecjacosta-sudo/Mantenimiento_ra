@@ -32,6 +32,7 @@ const state = {
   showGuide: false,
   registerIndex: 0,
   placeYawOffset: 0,
+  placeStep: 0,          // ubicación en 2 puntos: 0 = punto delantero, 1 = punto trasero
   handheld: false,       // celular / tablet (AR con la cámara, interfaz táctil)
 };
 const app = {
@@ -124,6 +125,19 @@ reticle.visible = false;
 const reticleGhost = new THREE.Group();
 reticle.add(reticleGhost);
 scene.add(reticle);
+
+// Marca del punto 1 mientras se busca el punto 2
+const placeMarker = new THREE.Group();
+{
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.17, 40).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0x3fb950, depthTest: false }));
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.8, 8), new THREE.MeshBasicMaterial({ color: 0x3fb950, depthTest: false }));
+  pole.position.y = 0.4;
+  ring.renderOrder = pole.renderOrder = 45;
+  placeMarker.add(ring, pole);
+  placeMarker.visible = false;
+}
+scene.add(placeMarker);
 
 const registerTip = new THREE.Mesh(new THREE.SphereGeometry(0.018, 16, 12),
   new THREE.MeshBasicMaterial({ color: 0xffb000, depthTest: false }));
@@ -277,17 +291,42 @@ function openDetail(label) {
 }
 
 // --- Ubicación del equipo (alinear el modelo con la máquina real) -------------
+// Se marcan 2 puntos en el suelo: bajo el extremo DELANTERO y bajo el extremo TRASERO del equipo
+// (los mismos extremos que se marcan al calibrar las fotos). Con eso se conoce la posición,
+// la orientación real y la escala, sin suponer hacia dónde mira el equipo.
 let anchor = null;            // XRAnchor que mantiene el equipo fijo en el espacio real
 let anchorDueAt = 0;          // cuándo (re)crear el ancla tras un ajuste
-const refOffset = new THREE.Vector3();
+const refOffset = new THREE.Vector3();   // extremo delantero (coordenadas del equipo)
+const rearOffset = new THREE.Vector3();  // extremo trasero (coordenadas del equipo)
+const placeA = new THREE.Vector3();      // punto delantero marcado
+let placeBackup = null;                  // posición anterior, por si se cancela
+
+function updateReferencePoints(machine) {
+  const b = previewBounds(machine);
+  const cx = b.isEmpty() ? 0 : (b.min.x + b.max.x) / 2;
+  refOffset.set(cx, 0, b.isEmpty() ? 0 : b.max.z);
+  rearOffset.set(cx, 0, b.isEmpty() ? 0 : b.min.z);
+}
+
+function placeHint(step) {
+  const r = app.machine?.reference ?? {};
+  return step === 0
+    ? `Punto 1 de 2: el suelo justo debajo del extremo MÁS ADELANTADO del equipo${r.frontHint ? ` (${r.frontHint})` : ''}`
+    : `Punto 2 de 2: el suelo justo debajo del extremo MÁS ATRASADO del equipo${r.rearHint ? ` (${r.rearHint})` : ''}`;
+}
 
 function startPlace() {
   if (!state.xr) return;
   detail.close();
+  overlay.closeSheet();
+  placeBackup = state.placed ? { p: machineRoot.position.clone(), q: machineRoot.quaternion.clone(), s: machineRoot.scale.x } : null;
+  machineRoot.visible = false;
   state.mode = 'place';
+  state.placeStep = 0;
   state.placeYawOffset = 0;
-  reticleGhost.visible = true;
-  notify(state.handheld ? 'Apunta la mira al punto de referencia y toca "Ubicar aquí"' : 'Apunta al punto de referencia en el suelo y presiona el gatillo', 6);
+  reticleGhost.visible = false;
+  notify(placeHint(0), 6);
+  applyVisibility();
   refreshUI();
 }
 
@@ -301,10 +340,23 @@ function handheldAim(out, floorFallback) {
   return true;
 }
 
+/** Transformación del equipo dado el punto delantero A y el trasero B (en el mundo). */
+function poseFromPoints(A, B, outPos, outQuat) {
+  const dx = A.x - B.x, dz = A.z - B.z;
+  const yaw = Math.atan2(dx, dz); // +Z del equipo apunta de atrás hacia adelante
+  const modelLen = Math.max(0.1, refOffset.z - rearOffset.z);
+  const scale = THREE.MathUtils.clamp(Math.hypot(dx, dz) / modelLen, 0.5, 2);
+  outQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  // El origen queda de modo que el extremo delantero coincida con A (altura del suelo = promedio de A y B)
+  const ground = (A.y + B.y) / 2;
+  outPos.copy(refOffset).multiplyScalar(scale).applyQuaternion(outQuat).negate().add(new THREE.Vector3(A.x, ground, A.z));
+  return scale;
+}
+
 function updatePlacement() {
   let ok = false;
   if (state.handheld) {
-    ok = handheldAim(tmpV, true);
+    ok = viewerHit.has && handheldAim(tmpV, false); // en el celular: solo con el suelo realmente detectado
   } else {
     const c = activeController;
     if (!c?.userData.inputSource) { reticle.visible = false; return; }
@@ -316,35 +368,80 @@ function updatePlacement() {
       ok = !!raycaster.ray.intersectPlane(floorPlane, tmpV) && tmpV.distanceTo(raycaster.ray.origin) < 30;
     }
   }
+  if (state.handheld && overlay.setAimStatus) overlay.setAimStatus(ok);
   reticle.visible = ok;
   if (!ok) return;
   reticle.position.lerp(tmpV, reticle.userData.init ? 0.5 : 1);
   reticle.userData.init = true;
-  // Por defecto el frente del equipo (+Z) mira hacia el técnico.
-  const baseYaw = Math.atan2(camPos.x - reticle.position.x, camPos.z - reticle.position.z);
-  reticle.rotation.set(0, baseYaw + state.placeYawOffset, 0);
+  if (state.placeStep === 0) {
+    reticle.rotation.set(0, Math.atan2(camPos.x - reticle.position.x, camPos.z - reticle.position.z), 0);
+  } else {
+    // Vista previa en vivo: el contorno del equipo se estira entre el punto 1 y la mira
+    const sc = poseFromPoints(placeA, reticle.position, machineRoot.position, machineRoot.quaternion);
+    machineRoot.scale.setScalar(sc);
+    machineRoot.visible = placeA.distanceTo(reticle.position) > 0.5;
+    reticle.quaternion.copy(machineRoot.quaternion);
+  }
 }
 
 function confirmPlacement() {
-  machineRoot.quaternion.copy(reticle.quaternion);
-  machineRoot.position.copy(reticle.position).sub(tmpV2.copy(refOffset).applyQuaternion(reticle.quaternion));
+  if (state.placeStep === 0) {
+    placeA.copy(reticle.position);
+    state.placeStep = 1;
+    dropAnchor();
+    anchorDueAt = 0;
+    placeMarker.position.copy(placeA);
+    placeMarker.visible = true;
+    notify(placeHint(1), 6);
+    refreshUI();
+    return;
+  }
+  const dist = Math.hypot(placeA.x - reticle.position.x, placeA.z - reticle.position.z);
+  if (dist < 0.5) { notify('Los dos puntos están muy juntos: marca el extremo trasero del equipo', 3, '#e3b341'); return; }
+  const sc = poseFromPoints(placeA, reticle.position, machineRoot.position, machineRoot.quaternion);
+  machineRoot.scale.setScalar(sc);
+  store.set(`${app.machine.id}:scale`, sc);
   machineRoot.visible = true;
   machineRoot.updateMatrixWorld(true);
   state.placed = true;
   state.mode = 'view';
+  state.placeStep = 0;
+  placeMarker.visible = false;
   reticle.visible = false;
   reticle.userData.init = false;
+  placeBackup = null;
   dropAnchor();
   anchorDueAt = performance.now() + 300;
-  notify('Equipo ubicado. Mira las piezas para ver sus carteles.', 4, '#3fb950');
+  const modelLen = refOffset.z - rearOffset.z;
+  const off = Math.abs(sc - 1);
+  if (off > 0.12) notify(`Ubicado. Medido ${(modelLen * sc).toFixed(1)} m vs ${modelLen.toFixed(1)} m del modelo: se ajustó la escala ×${sc.toFixed(2)}`, 6, '#e3b341');
+  else notify('Equipo ubicado. Recorre la máquina para ver sus carteles.', 4, '#3fb950');
+  applyVisibility();
+  refreshUI();
+}
+
+function cancelPlace() {
+  state.mode = 'view';
+  state.placeStep = 0;
+  reticle.visible = false;
+  reticle.userData.init = false;
+  placeMarker.visible = false;
+  if (placeBackup) {
+    machineRoot.position.copy(placeBackup.p);
+    machineRoot.quaternion.copy(placeBackup.q);
+    machineRoot.scale.setScalar(placeBackup.s);
+    machineRoot.visible = true;
+    anchorDueAt = performance.now() + 300;
+  } else machineRoot.visible = false;
+  placeBackup = null;
+  applyVisibility();
   refreshUI();
 }
 
 /** Gira el equipo alrededor del punto de referencia (afinar la alineación). */
 function rotate(deg) {
   const rad = THREE.MathUtils.degToRad(deg);
-  if (state.mode === 'place') { state.placeYawOffset += rad; return; }
-  if (!state.placed) return;
+  if (!state.placed || state.mode === 'place') return;
   machineRoot.updateMatrixWorld(true);
   const before = machineRoot.localToWorld(tmpV.copy(refOffset));
   machineRoot.rotateY(rad);
@@ -387,6 +484,7 @@ async function restoreAnchor(session) {
   if (!uuid || !session.restorePersistentAnchor) return false;
   try {
     anchor = await session.restorePersistentAnchor(uuid);
+    machineRoot.scale.setScalar(store.get(`${app.machine.id}:scale`, 1));
     state.placed = true;
     state.mode = 'view';
     notify('Equipo ubicado desde la última sesión. Usa "Ubicar equipo" si no coincide.', 5, '#3fb950');
@@ -469,7 +567,7 @@ function finishRegister() {
 // --- Acciones (usadas por el menú del visor y por los botones de la PC) -------
 Object.assign(app.actions, {
   startPlace,
-  cancelPlace: () => { state.mode = 'view'; reticle.visible = false; reticle.userData.init = false; refreshUI(); },
+  cancelPlace,
   rotate,
   placeHere: () => {
     if (state.mode === 'place' && reticle.visible) confirmPlacement();
@@ -611,10 +709,7 @@ async function loadMachine(entry) {
 
   preview = buildPreview(machine);
   machineRoot.add(preview.solid, preview.guide);
-  refOffset.fromArray(machine.reference?.offset ?? [0, 0, 0]);
-  const ghost = preview.guide.clone();
-  ghost.position.copy(refOffset).negate();
-  reticleGhost.add(ghost);
+  updateReferencePoints(machine);
 
   rebuildLabels();
   detail.close();
@@ -628,7 +723,7 @@ async function loadMachine(entry) {
 
 function applyVisibility() {
   preview.solid.visible = !state.arMode;
-  preview.guide.visible = state.arMode && state.showGuide;
+  preview.guide.visible = state.arMode && (state.showGuide || state.mode === 'place');
   environment.visible = !state.arMode;
   scene.background = state.arMode ? null : DESKTOP_BG;
   toolbar.mesh.visible = state.xr && !state.handheld;
@@ -668,7 +763,7 @@ function updateLabels(dt) {
     }
     if ((detail.isOpen && detail.label === i.l) || overlay.label === i.l) s = 'compact';
     const scale = state.xr ? THREE.MathUtils.clamp(i.d / 2.2, 0.55, 2.6) * (state.handheld ? 1.3 : 1) : THREE.MathUtils.clamp(i.d / 3.2, 1, 6);
-    i.l.update(dt, camPos, s, scale);
+    i.l.update(dt, camPos, s, scale / machineRoot.scale.x);
   }
 }
 
@@ -699,6 +794,7 @@ function xrFrame(frame, dt) {
     const hp = frame.getHitTestResults(viewerHitSource)[0]?.getPose(ref);
     if (hp) { viewerHit.matrix.fromArray(hp.transform.matrix); viewerHit.has = true; }
   }
+  if (app._debug?.hit) { viewerHit.matrix.makeTranslation(...app._debug.hit); viewerHit.has = true; } // pruebas automáticas
 
   for (const c of controllers) {
     c.userData.hasHit = false;
@@ -710,7 +806,7 @@ function xrFrame(frame, dt) {
 
   // Ancla: crear tras ubicar/ajustar, y seguirla cada cuadro (corrige la deriva del tracking)
   if (anchorDueAt && performance.now() > anchorDueAt) { anchorDueAt = 0; createAnchor(frame); }
-  if (anchor && !anchorDueAt) {
+  if (anchor && !anchorDueAt && state.mode !== 'place') {
     const ap = frame.getPose(anchor.anchorSpace, ref);
     if (ap) {
       machineRoot.position.copy(ap.transform.position);
@@ -722,7 +818,7 @@ function xrFrame(frame, dt) {
   // Stick: girar la retícula al ubicar
   for (const src of session.inputSources) {
     const ax = src.gamepad?.axes?.[2] ?? 0;
-    if (state.mode === 'place' && Math.abs(ax) > 0.25) state.placeYawOffset -= ax * dt * 1.2;
+    void ax;
   }
 
   // Rayos y cursores
@@ -779,6 +875,7 @@ async function enterXR() {
   machineRoot.visible = false;
   machineRoot.position.set(0, 0, 0);
   machineRoot.quaternion.identity();
+  machineRoot.scale.setScalar(1);
   hud.follower.reset();
   toolbar.follower.reset();
   photoEditor.close();
@@ -801,6 +898,8 @@ function onSessionEnd() {
   machineRoot.visible = true;
   machineRoot.position.set(0, 0, 0);
   machineRoot.quaternion.identity();
+  machineRoot.scale.setScalar(1);
+  placeMarker.visible = false;
   if (savedDesktopView) { camera.position.copy(savedDesktopView.pos); controls.target.copy(savedDesktopView.target); }
   for (const c of controllers) onControllerDisconnected(c);
   viewerHitSource?.cancel?.();
@@ -945,7 +1044,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = '6';
+export const APP_VERSION = '7';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

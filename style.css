@@ -177,3 +177,5 @@ body.sheet-open:not(.in-xr) #arCross, body.sheet-open:not(.in-xr) #arToast { dis
 .pe-tools button[data-a=removePhoto] { flex: 0 0 52px; }
 .pe-tools button, .pe-tools .button { flex: 1 1 80px; }
 .pe-list button.active .marks i.on { background: #fff; color: var(--btn-active); }
+#arBottom p.aim { color: var(--warn); font-weight: 600; }
+#arBottom p.aim.ok { color: var(--ok); }

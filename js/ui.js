@@ -107,17 +107,19 @@ export class Toolbar {
 
       if (state.mode === 'place') {
         ctx.fillStyle = COLORS.accent; ctx.font = font(21, 700);
-        ctx.fillText('UBICAR EQUIPO', 18, 108);
+        ctx.fillText(`UBICAR EQUIPO · PUNTO ${state.placeStep + 1} DE 2`, 18, 108);
         ctx.fillStyle = COLORS.text; ctx.font = font(19, 400);
-        let y = drawWrapped(ctx, `Apunta a: ${machine.reference?.description ?? 'el centro del equipo, en el suelo'}.`, 18, 136, W - 36, 25, 210);
+        const r = machine.reference ?? {};
+        const txt = state.placeStep === 0
+          ? `Apunta al suelo bajo el extremo MÁS ADELANTADO del equipo${r.frontHint ? ` (${r.frontHint})` : ''}.`
+          : `Ahora al suelo bajo el extremo MÁS ATRASADO${r.rearHint ? ` (${r.rearHint})` : ''}.`;
+        const y = drawWrapped(ctx, txt, 18, 136, W - 36, 25, 210);
         ctx.fillStyle = COLORS.muted;
-        drawWrapped(ctx, 'Gatillo/pellizco = confirmar. Stick o botones = girar.', 18, y + 2, W - 36, 25, 240);
+        drawWrapped(ctx, 'Gatillo / pellizco = marcar.', 18, y + 2, W - 36, 25, 240);
         grid([
-          { label: 'Girar ⟲ 5°', onClick: () => actions.rotate(5) },
-          { label: 'Girar ⟳ 5°', onClick: () => actions.rotate(-5) },
-          state.placed ? { label: 'Cancelar', onClick: actions.cancelPlace } : null,
+          state.placed || state.placeStep > 0 ? { label: 'Cancelar', onClick: actions.cancelPlace } : null,
           { label: 'Salir de RA', onClick: actions.exitXR },
-        ], H - 2 * (bh + 11) - 6);
+        ], H - (bh + 11) - 6);
       } else if (state.mode === 'register') {
         const comps = machine.components;
         const comp = comps[state.registerIndex];

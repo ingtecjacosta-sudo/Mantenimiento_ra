@@ -5,12 +5,9 @@
   "hourMeter": 4820,
   "note": "Datos de EJEMPLO. Reemplazar con los valores del manual del fabricante de su equipo.",
   "reference": {
-    "description": "el suelo, al centro del frente de las orugas (entre ambas)",
-    "offset": [
-      0,
-      0,
-      2.2
-    ]
+    "description": "el suelo bajo el extremo delantero y el trasero del equipo",
+    "frontHint": "bajo la punta del cucharón",
+    "rearHint": "bajo el contrapeso"
   },
   "preview": [
     {
