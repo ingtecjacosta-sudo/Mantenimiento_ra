@@ -916,7 +916,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = '3';
+export const APP_VERSION = '4';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

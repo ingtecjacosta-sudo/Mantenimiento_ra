@@ -41,7 +41,7 @@ Luego pulsa **Entrar en realidad mixta** y acepta los permisos (seguimiento del 
 Sirve para armar un equipo nuevo (o completar uno existente) sin editar archivos, desde el celular o la PC.
 
 1. **+ Nuevo equipo**: nombre, medidas aproximadas (largo × ancho × alto) y horómetro. En un equipo existente usa **📷 Cargar foto**.
-2. **Tomar o elegir foto**: idealmente de costado, con toda la máquina en el cuadro y la cámara a media altura.
+2. **📷 Tomar foto** (abre la cámara) o **🖼️ Galería**: idealmente de costado, con toda la máquina en el cuadro y la cámara a media altura.
 3. Elige qué lado muestra la foto (izquierdo, derecho o frente) y toca **Calibrar**. Luego marca 3 puntos: el extremo delantero a nivel del suelo, el extremo trasero y el punto más alto.
 4. **+ Agregar componente** y toca la foto donde está la pieza; o elige uno de la lista y tócalo en la foto para ubicarlo.
 5. Con la calibración, la app calcula la **posición 3D** de cada componente y aparecen sus carteles en RA. La profundidad no se ve en una foto, así que el cartel queda sobre la cara visible del equipo. En la máquina real, **Registrar puntos** corrige los que haga falta: un punto registrado en RA siempre tiene prioridad sobre el de la foto.

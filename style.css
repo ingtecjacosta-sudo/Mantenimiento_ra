@@ -127,7 +127,7 @@ body.editing #panel { display: none; }
 #photoEditor header button { flex: 0 0 auto; background: var(--accent); color: #111; border: none; }
 .pe-empty { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 2px dashed var(--border);
   border-radius: 14px; text-align: center; color: var(--muted); }
-.pe-empty .button { flex: none; }
+.pe-empty .button { flex: 1; }
 .button.primary, button.primary { background: var(--accent); color: #111; border: none; }
 .pe-tools { display: flex; gap: 8px; flex-wrap: wrap; }
 .pe-tools select { flex: 2 1 180px; }

@@ -31,14 +31,30 @@ export async function loadPhoto(id) {
 }
 
 /** Reduce la foto (máx. 1600 px) para que ocupe poco y cargue rápido. */
+async function decodeImage(file) {
+  try { return await createImageBitmap(file); } catch {
+    // Respaldo para navegadores/formatos donde createImageBitmap falla
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      return img;
+    } catch {
+      throw new Error('formato de imagen no compatible (usa JPG o PNG)');
+    } finally { URL.revokeObjectURL(url); }
+  }
+}
+
 export async function resizeImage(file, max = 1600) {
-  const bmp = await createImageBitmap(file);
+  const bmp = await decodeImage(file);
   const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bmp.width * s);
   canvas.height = Math.round(bmp.height * s);
   canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
   bmp.close?.();
+  if (!canvas.width || !canvas.height) throw new Error('la imagen está vacía');
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
 }
 export const blobToDataURL = (blob) => new Promise((resolve) => {
@@ -145,7 +161,7 @@ export class PhotoEditor {
     if (!url) {
       html += `<div class="pe-empty">
         <p>Toma una foto <b>de costado</b> (o de frente) donde se vea la máquina completa. Luego tocas sobre la foto dónde está cada componente.</p>
-        <label class="button primary">📷 Tomar o elegir foto<input data-a="file" type="file" accept="image/*" hidden></label>
+        <div class="row"><label class="button primary">📷 Tomar foto<input data-a="file" type="file" accept="image/*" capture="environment" hidden></label><label class="button">🖼️ Galería<input data-a="file" type="file" accept="image/*" hidden></label></div>
       </div>`;
     } else {
       const pins = m.components.filter((c) => Array.isArray(c.photo)).map((c) => {
@@ -157,7 +173,8 @@ export class PhotoEditor {
       html += `<div class="pe-tools">
           <select data-a="view" aria-label="Qué lado muestra la foto">${Object.entries(VIEWS).map(([k, v]) => `<option value="${k}" ${m.photoView === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
           <button data-a="calib" class="${this.mode === 'calib' ? 'active' : (!m.photoCalib ? 'primary' : '')}">${this.mode === 'calib' ? 'Cancelar' : 'Calibrar'}</button>
-          <label class="button">Cambiar foto<input data-a="file" type="file" accept="image/*" hidden></label>
+          <label class="button">📷 Nueva foto<input data-a="file" type="file" accept="image/*" capture="environment" hidden></label>
+          <label class="button">🖼️ Galería<input data-a="file" type="file" accept="image/*" hidden></label>
         </div>
         <p class="pe-hint">${this.hint()}</p>
         <div class="pe-photo ${this.mode !== 'idle' || this.sel ? 'aiming' : ''}"><img data-a="photo" src="${url}" alt="Foto del equipo" draggable="false">${cal}${pins}</div>
@@ -177,6 +194,8 @@ export class PhotoEditor {
   async onChange(e) {
     const a = e.target.dataset.a;
     if (a === 'file' && e.target.files[0]) {
+      const hint = this.root.querySelector('.pe-hint, .pe-empty p');
+      if (hint) hint.textContent = 'Cargando foto…';
       try {
         const blob = await resizeImage(e.target.files[0]);
         await this.app.actions.setPhoto(blob);
@@ -187,6 +206,7 @@ export class PhotoEditor {
       } catch (err) {
         alert(`No se pudo cargar la foto: ${err.message}`);
       }
+      e.target.value = '';
       this.render();
     } else if (a === 'view') {
       this.machine.photoView = e.target.value;
