@@ -36,18 +36,25 @@ Luego pulsa **Entrar en realidad mixta** y acepta los permisos (seguimiento del 
 
 > Recomendado: hacer la configuración del espacio del Quest (*Space Setup*) en el lugar de trabajo; mejora la detección del suelo y la estabilidad de las anclas.
 
-## Cargar un equipo desde una foto
+## Cargar un equipo desde fotos
 
-Sirve para armar un equipo nuevo (o completar uno existente) sin editar archivos, desde el celular o la PC.
+Sirve para armar un equipo nuevo (o completar uno existente) sin editar archivos, desde el celular o la PC. Se pueden usar **hasta 4 fotos**: izquierdo, frente, derecho y atrás.
 
-1. **+ Nuevo equipo**: nombre, medidas aproximadas (largo × ancho × alto) y horómetro. En un equipo existente usa **📷 Cargar foto**.
-2. **📷 Tomar foto** (abre la cámara) o **🖼️ Galería**: idealmente de costado, con toda la máquina en el cuadro y la cámara a media altura.
-3. Elige qué lado muestra la foto (izquierdo, derecho o frente) y toca **Calibrar**. Luego marca 3 puntos: el extremo delantero a nivel del suelo, el extremo trasero y el punto más alto.
-4. **+ Agregar componente** y toca la foto donde está la pieza; o elige uno de la lista y tócalo en la foto para ubicarlo.
-5. Con la calibración, la app calcula la **posición 3D** de cada componente y aparecen sus carteles en RA. La profundidad no se ve en una foto, así que el cartel queda sobre la cara visible del equipo. En la máquina real, **Registrar puntos** corrige los que haga falta: un punto registrado en RA siempre tiene prioridad sobre el de la foto.
-6. La ficha de cada componente tiene una pestaña **Foto** con la pieza marcada.
+1. **+ Nuevo equipo**: nombre, medidas aproximadas (largo × ancho × alto) y horómetro. En un equipo existente usa **📷 Cargar fotos**.
+2. Elige la vista (**Izquierdo / Frente / Derecho / Atrás**) y toca **📷 Tomar foto** o **🖼️ Galería**. Que se vea la máquina completa, desde unos metros, a media altura y **sin zoom**.
+3. **Calibrar** cada foto con 3 toques: los dos extremos del equipo a nivel del suelo y el punto más alto.
+4. Elige un componente de la lista (o **+ Agregar componente**) y tócalo en la foto. Repite en otra vista: las letras **I F D A** muestran en qué fotos está marcado.
 
-La foto queda guardada en el dispositivo y **viaja dentro del JSON** al exportar, para compartir el equipo completo con otros celulares o visores.
+**Precisión:**
+
+| Marcado en… | Resultado |
+|---|---|
+| 1 foto | *aproximado*: altura y largo (o ancho) correctos, pero el cartel queda sobre la cara visible del equipo |
+| 1 costado + frente o atrás | **3D completo ✔**: se combinan las vistas y además se **corrige la perspectiva** usando la distancia focal guardada en la foto (EXIF) |
+
+En pruebas con fotos simuladas, el error con 2 vistas quedó entre 3 y 13 cm (sin corrección de perspectiva eran ~30 cm). En la máquina real, **Registrar puntos** en RA permite afinar: un punto registrado en RA siempre tiene prioridad sobre las fotos.
+
+La ficha de cada componente muestra las fotos donde está marcado. Las fotos quedan guardadas en el dispositivo y **viajan dentro del JSON** al exportar.
 
 ## Uso en el celular Android
 

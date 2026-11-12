@@ -2,6 +2,7 @@
 // Se muestra encima de la cámara mediante WebXR DOM Overlay.
 import { STATUS } from './panel.js';
 import { maintenanceInfo, hoursText, getChecklist, setChecklist } from './data.js';
+import { VIEWS } from './photo.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
@@ -111,7 +112,8 @@ export class ArOverlay {
     const label = this.label, c = label.comp, m = this.app.machine;
     const st = STATUS[label.status];
     const tabs = [['resumen', 'Resumen'], ['proc', 'Pasos'], ['check', 'Checklist'], ['parts', 'Repuestos']];
-    if (this.app.photoUrl && Array.isArray(c.photo)) tabs.push(['foto', 'Foto']);
+    const views = Object.keys(VIEWS).filter((v) => this.app.photoUrls[v] && Array.isArray(c.photos?.[v]));
+    if (views.length) tabs.push(['foto', views.length > 1 ? `Fotos (${views.length})` : 'Foto']);
     else if (this.tab === 'foto') this.tab = 'resumen';
     let body = '';
     if (this.tab === 'resumen') {
@@ -149,7 +151,8 @@ export class ArOverlay {
           ${c.maintenance ? `<button data-act="service" class="primary wide" ${done < items.length ? 'disabled' : ''}>Registrar servicio (${hoursText(m.hourMeter)})</button>` : ''}`;
       }
     } else if (this.tab === 'foto') {
-      body = `<div class="sheet-photo"><img src="${this.app.photoUrl}" alt="Foto del equipo"><i class="${label.status}" style="left:${c.photo[0] * 100}%;top:${c.photo[1] * 100}%"></i></div>`;
+      body = views.map((v) => `<h4>${VIEWS[v]}</h4><div class="sheet-photo"><img src="${this.app.photoUrls[v]}" alt="Foto ${VIEWS[v]}">
+        <i class="${label.status}" style="left:${c.photos[v][0] * 100}%;top:${c.photos[v][1] * 100}%"></i></div>`).join('');
     } else {
       const parts = c.parts ?? [];
       body = parts.length

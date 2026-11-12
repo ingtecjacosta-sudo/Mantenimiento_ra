@@ -7,7 +7,7 @@ import { ComponentLabel } from './labels.js';
 import { DetailWindow, Toolbar, Hud } from './ui.js';
 import { ArOverlay } from './overlay.js';
 import { buildPreview, disposeTree, previewBounds } from './preview.js';
-import { PhotoEditor, savePhoto, loadPhoto, photoTo3D, blobToDataURL, dataURLToBlob } from './photo.js';
+import { PhotoEditor, savePhoto, loadPhoto, componentFromPhotos, migratePhotos, photoKey, VIEWS, blobToDataURL, dataURLToBlob } from './photo.js';
 import {
   store, fetchJSON, applyLocalState, savePoint, saveService, saveHourMeter, setChecklist,
   resetLocalState, exportMachine, downloadJSON,
@@ -36,8 +36,9 @@ const state = {
 };
 const app = {
   state, machine: null, labels: [], actions: {},
-  photoUrl: null,          // foto de referencia del equipo actual (blob URL)
-  photoImage: null,        // la misma foto como imagen, para dibujarla en los paneles 3D
+  photoUrls: {},           // fotos de referencia del equipo actual por vista (blob URL)
+  photoImages: {},         // las mismas fotos como imágenes, para dibujarlas en los paneles 3D
+  bounds: () => previewBounds(app.machine),
   arPoints: () => store.get(`${app.machine?.id}:points`, {}),
 };
 let machineIndex = [];
@@ -482,13 +483,16 @@ Object.assign(app.actions, {
   exitXR: () => renderer.xr.getSession()?.end(),
   exportJSON: async () => {
     const out = exportMachine(app.machine);
-    const blob = await loadPhoto(app.machine.id);
-    if (blob) out.photoData = await blobToDataURL(blob); // la foto viaja dentro del JSON
+    out.photosData = {}; // las fotos viajan dentro del JSON
+    for (const v of Object.keys(VIEWS)) {
+      const blob = await loadPhoto(photoKey(app.machine.id, v));
+      if (blob) out.photosData[v] = await blobToDataURL(blob);
+    }
     downloadJSON(out, `${app.machine.id}.json`);
   },
   openPhotoEditor: () => photoEditor.open(),
-  setPhoto: async (blob) => {
-    await savePhoto(app.machine.id, blob);
+  setPhoto: async (view, blob) => {
+    await savePhoto(photoKey(app.machine.id, view), blob);
     await loadPhotoFor(app.machine);
   },
   /** Llamado por el editor de foto cada vez que cambia algo del equipo. */
@@ -515,7 +519,7 @@ Object.assign(app.actions, {
       dimensions: [W, H, L],
       reference: { description: 'el suelo, al centro del frente del equipo', offset: [0, 0, L / 2] },
       preview: [{ size: [W, H, L], pos: [0, H / 2, 0], color: '#d9a400' }],
-      photoView: 'izq',
+      photos: {},
       components: [],
     };
     saveLocalMachine(machine);
@@ -541,14 +545,18 @@ Object.assign(app.actions, {
 // --- Carga del equipo ------------------------------------------------------------
 /** Componentes marcados en la foto → posición 3D (salvo los ya ubicados en RA, que son más precisos). */
 function applyPhotoPositions(machine) {
-  if (!machine.photoCalib) return;
   const bounds = previewBounds(machine);
   const points = store.get(`${machine.id}:points`, {});
   for (const c of machine.components) {
-    if (!Array.isArray(c.photo) || Array.isArray(points[c.id])) continue;
-    const p = photoTo3D(machine, c.photo, bounds);
-    if (p) c.position = p;
+    if (Array.isArray(points[c.id])) continue;
+    const r = componentFromPhotos(machine, c, bounds);
+    if (r) c.position = r.position;
   }
+}
+
+async function removeAllPhotos(id) {
+  for (const v of Object.keys(VIEWS)) await savePhoto(photoKey(id, v), null).catch(() => {});
+  await savePhoto(id, null).catch(() => {});
 }
 
 function rebuildLabels() {
@@ -559,21 +567,39 @@ function rebuildLabels() {
 }
 
 async function loadPhotoFor(machine) {
-  if (app.photoUrl) URL.revokeObjectURL(app.photoUrl);
-  app.photoUrl = null;
-  app.photoImage = null;
-  const blob = await loadPhoto(machine.id);
-  if (!blob || app.machine !== machine) return;
-  app.photoUrl = URL.createObjectURL(blob);
-  const img = new Image();
-  img.onload = () => { app.photoImage = img; detail.render(); };
-  img.src = app.photoUrl;
+  for (const url of Object.values(app.photoUrls)) URL.revokeObjectURL(url);
+  app.photoUrls = {};
+  app.photoImages = {};
+  // Equipos guardados con la versión de una sola foto: mover la foto a su vista.
+  const legacy = await loadPhoto(machine.id);
+  if (legacy) {
+    const view = machine._legacyView ?? 'izq';
+    await savePhoto(photoKey(machine.id, view), legacy);
+    await savePhoto(machine.id, null);
+  }
+  for (const v of Object.keys(VIEWS)) {
+    const blob = await loadPhoto(photoKey(machine.id, v));
+    if (!blob || app.machine !== machine) continue;
+    const url = URL.createObjectURL(blob);
+    app.photoUrls[v] = url;
+    const img = new Image();
+    img.onload = () => {
+      app.photoImages[v] = img;
+      // Fotos de versiones anteriores: guardar la proporción para poder corregir la perspectiva.
+      const pv = machine.photos?.[v];
+      if (pv && !pv.aspect && img.naturalHeight) { pv.aspect = Math.round((img.naturalWidth / img.naturalHeight) * 1e4) / 1e4; saveLocalMachine(machine); }
+      detail.render();
+    };
+    img.src = url;
+  }
   updateDomInfo();
 }
 
 async function loadMachine(entry) {
   const data = getLocalMachine(entry.id) ?? entry.data ?? await fetchJSON(entry.file);
+  const legacyView = migratePhotos(data);
   const machine = applyLocalState(data);
+  if (legacyView) { machine._legacyView = legacyView; saveLocalMachine(machine); }
   applyPhotoPositions(machine);
   app.machine = machine;
   store.set('lastMachine', machine.id);
@@ -793,7 +819,8 @@ function updateDomInfo() {
   $('hourMeter').value = m.hourMeter;
   const alerts = app.labels.filter((l) => l.status !== 'ok');
   const missing = m.components.filter((c) => !Array.isArray(c.position)).length;
-  if ($('btnPhoto')) $('btnPhoto').textContent = app.photoUrl ? '📷 Editar foto' : '📷 Cargar foto';
+  const nPhotos = Object.keys(app.photoUrls).length;
+  if ($('btnPhoto')) $('btnPhoto').textContent = nPhotos ? `📷 Fotos (${nPhotos}/4)` : '📷 Cargar fotos';
   $('machineInfo').innerHTML = `${m.components.length} componentes · `
     + (alerts.length ? `<b class="warn">${alerts.length} con alerta</b>` : '<b class="ok">sin alertas</b>')
     + (missing ? ` · ${missing} sin punto registrado` : '');
@@ -843,7 +870,7 @@ function setupDom() {
       if (!confirm(`¿Eliminar el equipo "${app.machine.name}" de este dispositivo? (exporta el JSON antes si lo quieres conservar)`)) return;
       resetLocalState(app.machine);
       removeCustomMachine(app.machine.id);
-      await savePhoto(app.machine.id, null).catch(() => {});
+      await removeAllPhotos(app.machine.id);
       machineIndex = machineIndex.filter((e) => e.id !== app.machine.id);
       fillSelect(machineIndex[0].id);
       await loadMachine(machineIndex[0]);
@@ -851,7 +878,7 @@ function setupDom() {
     }
     if (!confirm('¿Volver a los datos originales de este equipo? Se borran puntos registrados, servicios, checklists, foto y componentes agregados en este dispositivo.')) return;
     resetLocalState(app.machine);
-    await savePhoto(app.machine.id, null).catch(() => {});
+    await removeAllPhotos(app.machine.id);
     await loadMachine(machineIndex.find((e) => e.id === app.machine.id) ?? machineIndex[0]);
   });
   $('btnPanel')?.addEventListener('click', () => document.body.classList.toggle('panel-collapsed'));
@@ -871,8 +898,10 @@ function setupDom() {
     try {
       const data = JSON.parse(await file.text());
       if (!data.id || !Array.isArray(data.components)) throw new Error('Falta "id" o "components"');
-      const { photoData, ...machine } = data;
-      if (photoData) await savePhoto(machine.id, await dataURLToBlob(photoData));
+      const { photoData, photosData, ...machine } = data;
+      const legacyView = migratePhotos(machine);
+      if (photoData) await savePhoto(photoKey(machine.id, legacyView ?? 'izq'), await dataURLToBlob(photoData));
+      for (const [v, url] of Object.entries(photosData ?? {})) if (VIEWS[v]) await savePhoto(photoKey(machine.id, v), await dataURLToBlob(url));
       saveLocalMachine(machine);
       const builtIn = machineIndex.find((m) => m.id === machine.id && !m.local);
       if (!builtIn) {
@@ -916,7 +945,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = '4';
+export const APP_VERSION = '6';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }
@@ -942,5 +971,5 @@ async function init() {
 init();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 app.openDetail = openDetail;
-app._debug = { camera, controls };
+app._debug = { camera, controls }; // usado por las pruebas automáticas
 window.__app = app; // útil para depurar desde la consola

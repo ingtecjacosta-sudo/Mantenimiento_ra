@@ -166,3 +166,14 @@ body.sheet-open:not(.in-xr) #arOverlay { display: block; position: fixed; left: 
 body.sheet-open:not(.in-xr) #arTop, body.sheet-open:not(.in-xr) #arBottom,
 body.sheet-open:not(.in-xr) #arCross, body.sheet-open:not(.in-xr) #arToast { display: none; }
 .version { margin: 0; color: var(--muted); font-size: 11px; text-align: right; }
+.pe-views { display: flex; gap: 6px; }
+.pe-views button { padding: 8px 4px; font-size: 14px; }
+.pe-views b { font-size: 12px; } .pe-views b.ok { color: var(--ok); } .pe-views b.warn { color: var(--warn); }
+.pe-list .marks { display: flex; gap: 2px; font-style: normal; }
+.pe-list .marks i { width: 16px; height: 16px; border-radius: 4px; font: 700 10px/16px system-ui, sans-serif; font-style: normal;
+  text-align: center; background: rgba(255, 255, 255, 0.08); color: var(--muted); }
+.pe-list .marks i.on { background: var(--btn-active); color: #fff; }
+.sheet-body .sheet-photo + h4 { margin-top: 10px; }
+.pe-tools button[data-a=removePhoto] { flex: 0 0 52px; }
+.pe-tools button, .pe-tools .button { flex: 1 1 80px; }
+.pe-list button.active .marks i.on { background: #fff; color: var(--btn-active); }

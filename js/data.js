@@ -19,8 +19,9 @@ export async function fetchJSON(url) {
 /** Copia local de un equipo editado en este dispositivo (componentes agregados, foto, etc.). */
 export function getLocalMachine(id) { return store.get(`machine:${id}`, null); }
 export function saveLocalMachine(machine) {
-  const copy = structuredClone({ ...machine, _original: undefined });
+  const copy = structuredClone({ ...machine, _original: undefined, _legacyView: undefined });
   delete copy._original;
+  delete copy._legacyView;
   store.set(`machine:${machine.id}`, copy);
   machine._original = structuredClone(copy);
 }
@@ -115,11 +116,14 @@ export function exportMachine(machine) {
   out.components = machine.components.map((c) => {
     const o = out.components.find((x) => x.id === c.id) ?? structuredClone(c);
     o.position = c.position ?? null;
-    if (c.photo) o.photo = c.photo;
+    if (c.photos) o.photos = c.photos;
+    delete o.photo;
     if (c.maintenance && o.maintenance) o.maintenance.lastServiceHours = c.maintenance.lastServiceHours;
     return o;
   });
-  for (const k of ['photoView', 'photoCalib']) if (machine[k] !== undefined) out[k] = machine[k];
+  if (machine.photos) out.photos = machine.photos;
+  delete out.photoView;
+  delete out.photoCalib;
   out.exportedAt = new Date().toISOString();
   return out;
 }

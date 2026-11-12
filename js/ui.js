@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { CanvasPanel, COLORS, STATUS, font, fitText, roundRect, drawWrapped, drawButton } from './panel.js';
 import { maintenanceInfo, hoursText, getChecklist, setChecklist } from './data.js';
+import { bestViewFor } from './photo.js';
 
 const _v = new THREE.Vector3();
 
@@ -208,7 +209,8 @@ export class DetailWindow {
       ctx.fillText(st.label, 54 + ctx.measureText(sys).width, 92);
       drawButton(ctx, p, { x: W - 96, y: 24, w: 72, h: 72, label: '✕', size: 34, onClick: () => this.close() });
 
-      const tabs = this.app.photoImage && Array.isArray(c.photo) ? [...TABS, ['foto', 'Foto']] : TABS;
+      this.photoView = bestViewFor(this.app, c);
+      const tabs = this.photoView && this.app.photoImages[this.photoView] ? [...TABS, ['foto', 'Foto']] : TABS;
       if (!tabs.some(([id]) => id === this.tab)) this.tab = 'resumen';
       const tw = (W - 48 - (tabs.length - 1) * 10) / tabs.length;
       tabs.forEach(([id, name], i) => drawButton(ctx, p, {
@@ -330,7 +332,8 @@ export class DetailWindow {
   }
 
   drawPhoto(ctx, p, c, top) {
-    const img = this.app.photoImage;
+    const img = this.app.photoImages[this.photoView];
+    const uv = c.photos[this.photoView];
     const x0 = 24, y0 = top - 30, w = p.W - 48, h = p.H - y0 - 20;
     const s = Math.min(w / img.width, h / img.height);
     const iw = img.width * s, ih = img.height * s, ix = x0 + (w - iw) / 2, iy = y0 + (h - ih) / 2;
@@ -338,7 +341,7 @@ export class DetailWindow {
     roundRect(ctx, ix, iy, iw, ih, 14); ctx.clip();
     ctx.drawImage(img, ix, iy, iw, ih);
     ctx.restore();
-    const px = ix + c.photo[0] * iw, py = iy + c.photo[1] * ih;
+    const px = ix + uv[0] * iw, py = iy + uv[1] * ih;
     const color = STATUS[this.label.status].color;
     ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
     ctx.beginPath(); ctx.arc(px, py, 30, 0, Math.PI * 2); ctx.stroke();
