@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mantenimiento RA</title>
+  <meta name="description" content="Asistente de mantenimiento de maquinaria pesada en realidad mixta para Meta Quest 3">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <aside id="panel">
+    <header>
+      <div>
+        <h1>Mantenimiento RA</h1>
+        <p class="sub">Carteles de componentes sobre la máquina real · Meta Quest 3</p>
+      </div>
+      <button id="btnPanel" class="icon" title="Mostrar/ocultar panel" aria-label="Mostrar u ocultar panel">☰</button>
+    </header>
+
+    <div class="body">
+      <label>Equipo
+        <select id="machineSelect"></select>
+      </label>
+      <label>Horómetro actual (h)
+        <input id="hourMeter" type="number" min="0" step="1" inputmode="numeric">
+      </label>
+      <p id="machineInfo" class="info"></p>
+      <ul id="alertList" class="alerts"></ul>
+
+      <button id="btnXR" class="primary" disabled>Buscando visor…</button>
+      <p id="xrStatus" class="status"></p>
+
+      <div class="row">
+        <button id="btnShowAll">Carteles: Auto</button>
+        <button id="btnAlerts">Ver: Todo</button>
+      </div>
+      <div class="row">
+        <button id="btnExport">Exportar JSON</button>
+        <label class="button">Cargar JSON<input id="fileInput" type="file" accept="application/json,.json" hidden></label>
+      </div>
+      <button id="btnReset" class="link">Borrar datos guardados de este equipo</button>
+
+      <details>
+        <summary>Cómo se usa en el Quest 3</summary>
+        <ol>
+          <li>Pulsa <b>Entrar en realidad mixta</b>. Verás la máquina real a través de las cámaras.</li>
+          <li><b>Ubicar equipo:</b> apunta con el control (o la mano) al punto de referencia en el suelo indicado en el menú y presiona el gatillo / pellizca. Gira con el stick si hace falta.</li>
+          <li><b>Mira las piezas:</b> los carteles aparecen solos. El que miras de frente se amplía con el estado y el próximo servicio.</li>
+          <li>Apunta a un cartel y presiona el gatillo para abrir la <b>ficha</b>: especificaciones, procedimiento paso a paso, checklist y repuestos.</li>
+          <li><b>Registrar puntos</b> (una vez por equipo): toca cada pieza con la punta del control y presiona el gatillo. Luego <b>Exportar JSON</b> para compartir la configuración.</li>
+        </ol>
+        <p>En la PC: arrastra para girar la vista, rueda para acercar, clic en un cartel para abrir la ficha.</p>
+      </details>
+    </div>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

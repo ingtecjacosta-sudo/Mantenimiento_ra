@@ -1,0 +1,930 @@
+{
+  "id": "exc-20t-01",
+  "name": "Excavadora 20 t · EX-01",
+  "model": "Excavadora hidráulica sobre orugas, clase 20 t (genérica)",
+  "hourMeter": 4820,
+  "note": "Datos de EJEMPLO. Reemplazar con los valores del manual del fabricante de su equipo.",
+  "reference": {
+    "description": "el suelo, al centro del frente de las orugas (entre ambas)",
+    "offset": [
+      0,
+      0,
+      2.2
+    ]
+  },
+  "preview": [
+    {
+      "size": [
+        0.6,
+        0.9,
+        4.4
+      ],
+      "pos": [
+        1.1,
+        0.45,
+        0
+      ],
+      "color": "#2d2d2d"
+    },
+    {
+      "size": [
+        0.6,
+        0.9,
+        4.4
+      ],
+      "pos": [
+        -1.1,
+        0.45,
+        0
+      ],
+      "color": "#2d2d2d"
+    },
+    {
+      "size": [
+        1.6,
+        0.6,
+        2.6
+      ],
+      "pos": [
+        0,
+        0.6,
+        0
+      ],
+      "color": "#3a3a3a"
+    },
+    {
+      "size": [
+        1.6,
+        0.15,
+        1.6
+      ],
+      "pos": [
+        0,
+        0.97,
+        0
+      ],
+      "color": "#555555"
+    },
+    {
+      "size": [
+        2.6,
+        1.1,
+        3.0
+      ],
+      "pos": [
+        0,
+        1.55,
+        -0.4
+      ]
+    },
+    {
+      "size": [
+        2.6,
+        0.9,
+        0.7
+      ],
+      "pos": [
+        0,
+        1.5,
+        -2.25
+      ],
+      "color": "#c99800"
+    },
+    {
+      "size": [
+        1.5,
+        0.4,
+        1.6
+      ],
+      "pos": [
+        -0.5,
+        2.3,
+        -1.1
+      ],
+      "color": "#c99800"
+    },
+    {
+      "size": [
+        0.95,
+        1.6,
+        1.5
+      ],
+      "pos": [
+        0.8,
+        2.85,
+        0.3
+      ],
+      "color": "#9fb4c2"
+    },
+    {
+      "size": [
+        0.5,
+        0.6,
+        4.0
+      ],
+      "pos": [
+        -0.25,
+        3.1,
+        2.55
+      ],
+      "rot": [
+        -33.7,
+        0,
+        0
+      ]
+    },
+    {
+      "size": [
+        0.18,
+        0.18,
+        2.5
+      ],
+      "pos": [
+        -0.25,
+        2.2,
+        2.25
+      ],
+      "rot": [
+        -49.9,
+        0,
+        0
+      ],
+      "color": "#c0c0c0"
+    },
+    {
+      "size": [
+        0.16,
+        0.16,
+        1.9
+      ],
+      "pos": [
+        -0.25,
+        4.2,
+        3.35
+      ],
+      "rot": [
+        -38.7,
+        0,
+        0
+      ],
+      "color": "#c0c0c0"
+    },
+    {
+      "size": [
+        0.4,
+        0.45,
+        3.3
+      ],
+      "pos": [
+        -0.25,
+        2.7,
+        4.9
+      ],
+      "rot": [
+        65,
+        0,
+        0
+      ]
+    },
+    {
+      "size": [
+        0.14,
+        0.14,
+        2.4
+      ],
+      "pos": [
+        -0.25,
+        3.3,
+        5.05
+      ],
+      "rot": [
+        63.4,
+        0,
+        0
+      ],
+      "color": "#c0c0c0"
+    },
+    {
+      "size": [
+        1.0,
+        0.9,
+        0.9
+      ],
+      "pos": [
+        -0.25,
+        0.75,
+        5.9
+      ],
+      "color": "#4a4a4a"
+    }
+  ],
+  "components": [
+    {
+      "id": "motor",
+      "name": "Motor diésel",
+      "system": "Motor",
+      "position": [
+        -0.5,
+        2.1,
+        -1.1
+      ],
+      "labelOffset": [
+        -0.7,
+        0.75,
+        0
+      ],
+      "description": "Motor diésel turboalimentado de 4 cilindros con postenfriador.",
+      "specs": {
+        "Aceite": "SAE 15W-40 (API CK-4)",
+        "Capacidad": "≈ 24 L con filtro",
+        "Potencia": "≈ 110 kW @ 2.000 rpm",
+        "Ralentí": "≈ 900 rpm"
+      },
+      "maintenance": {
+        "task": "Cambio de aceite y filtro de motor",
+        "intervalHours": 500,
+        "lastServiceHours": 4350
+      },
+      "safety": [
+        "Aceite caliente: riesgo de quemaduras. Esperar a que baje de 60 °C.",
+        "Recolectar el aceite usado; no derramar en el suelo."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Dejar enfriar el motor unos 30 minutos y abrir la cubierta del motor.",
+        "Colocar recipiente bajo el tapón de drenaje del cárter. Retirar el tapón y drenar completamente.",
+        "Retirar el filtro de aceite con llave de filtro. Limpiar la base del filtro.",
+        "Lubricar la junta del filtro nuevo con aceite limpio. Montarlo a mano y apretar 3/4 de vuelta tras el contacto.",
+        "Instalar el tapón de drenaje con junta nueva (≈ 70 N·m). Rellenar con aceite hasta la marca 'FULL' de la varilla.",
+        "Arrancar 5 min en ralentí, revisar fugas, apagar, esperar 10 min y verificar nivel.",
+        "Registrar el horómetro del servicio y retirar el bloqueo."
+      ],
+      "checklist": [
+        "Bloqueo LOTO aplicado",
+        "Aceite drenado por completo",
+        "Filtro nuevo instalado",
+        "Tapón con junta nueva y torque",
+        "Nivel correcto en varilla",
+        "Sin fugas con motor en marcha"
+      ],
+      "parts": [
+        {
+          "pn": "FLT-OIL-0420",
+          "desc": "Filtro de aceite de motor",
+          "qty": 1
+        },
+        {
+          "pn": "GSK-DRN-018",
+          "desc": "Junta de tapón de drenaje",
+          "qty": 1
+        },
+        {
+          "pn": "OIL-1540-CK4",
+          "desc": "Aceite SAE 15W-40 (litros)",
+          "qty": 24
+        }
+      ]
+    },
+    {
+      "id": "filtro-aire",
+      "name": "Filtro de aire",
+      "system": "Admisión",
+      "position": [
+        -1.0,
+        2.25,
+        -0.4
+      ],
+      "labelOffset": [
+        -0.75,
+        0.55,
+        0.2
+      ],
+      "specs": {
+        "Tipo": "Elemento primario + de seguridad",
+        "Indicador": "Cambiar al marcar zona roja",
+        "Limpieza": "Aire seco < 2 bar, desde adentro"
+      },
+      "maintenance": {
+        "task": "Inspección / limpieza del elemento primario",
+        "intervalHours": 500,
+        "lastServiceHours": 4600
+      },
+      "safety": [
+        "No arrancar el motor sin el filtro instalado.",
+        "Usar gafas al limpiar con aire comprimido."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Abrir la puerta lateral y liberar los clips de la tapa del filtro.",
+        "Retirar el elemento primario con cuidado de no golpearlo contra la carcasa.",
+        "Limpiar el interior de la carcasa con un paño húmedo. No retirar el elemento de seguridad salvo que toque cambiarlo.",
+        "Inspeccionar el elemento con una lámpara: si tiene roturas o el sello dañado, reemplazar.",
+        "Instalar el elemento, cerrar la tapa con la válvula de evacuación hacia abajo y resetear el indicador."
+      ],
+      "checklist": [
+        "Carcasa limpia",
+        "Elemento sin roturas",
+        "Sello en buen estado",
+        "Indicador reseteado"
+      ],
+      "parts": [
+        {
+          "pn": "FLT-AIR-P210",
+          "desc": "Elemento primario",
+          "qty": 1
+        },
+        {
+          "pn": "FLT-AIR-S211",
+          "desc": "Elemento de seguridad (cada 3 cambios del primario)",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "radiador",
+      "name": "Radiador y enfriadores",
+      "system": "Enfriamiento",
+      "position": [
+        -0.9,
+        1.8,
+        -1.85
+      ],
+      "labelOffset": [
+        -0.7,
+        0.2,
+        -0.5
+      ],
+      "specs": {
+        "Refrigerante": "ELC larga duración 50/50",
+        "Capacidad": "≈ 28 L",
+        "Núcleos": "Radiador + enfriador hidráulico + postenfriador"
+      },
+      "maintenance": {
+        "task": "Limpieza de núcleos y revisión de mangueras",
+        "intervalHours": 1000,
+        "lastServiceHours": 4000
+      },
+      "safety": [
+        "No abrir la tapa del radiador con el motor caliente: el refrigerante sale a presión."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Con el motor frío, revisar el nivel en el tanque de expansión.",
+        "Soplar los núcleos con aire desde el lado del ventilador hacia afuera.",
+        "Revisar mangueras y abrazaderas: grietas, hinchazón o fugas.",
+        "Comprobar concentración del refrigerante con refractómetro."
+      ],
+      "checklist": [
+        "Nivel de refrigerante OK",
+        "Núcleos limpios",
+        "Mangueras sin daños",
+        "Concentración verificada"
+      ],
+      "parts": [
+        {
+          "pn": "CLT-ELC-5050",
+          "desc": "Refrigerante ELC 50/50 (litros)",
+          "qty": 5
+        }
+      ]
+    },
+    {
+      "id": "bomba-hidraulica",
+      "name": "Bomba hidráulica principal",
+      "system": "Hidráulico",
+      "position": [
+        -0.3,
+        1.7,
+        -0.5
+      ],
+      "labelOffset": [
+        0.1,
+        1.15,
+        0
+      ],
+      "specs": {
+        "Tipo": "Doble pistón axial, caudal variable",
+        "Caudal máx.": "≈ 2 × 210 L/min",
+        "Alivio principal": "≈ 34,3 MPa (350 bar)"
+      },
+      "maintenance": {
+        "task": "Inspección de fugas, ruido y temperatura",
+        "intervalHours": 250,
+        "lastServiceHours": 4750
+      },
+      "safety": [
+        "Despresurizar el sistema antes de aflojar cualquier conexión.",
+        "El aceite a presión puede penetrar la piel: nunca buscar fugas con la mano."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Despresurizar: mover todas las palancas con el motor apagado y la llave en ON, y aflojar lentamente la tapa del tanque hidráulico.",
+        "Inspeccionar con linterna la carcasa, bridas y mangueras de presión.",
+        "Con motor en marcha y aceite a temperatura, escuchar cavitación (ruido metálico/granuloso).",
+        "Medir temperatura de carcasa con termómetro IR (anotar valor)."
+      ],
+      "checklist": [
+        "Sin fugas visibles",
+        "Sin ruido anormal",
+        "Temperatura registrada"
+      ],
+      "parts": [
+        {
+          "pn": "ORG-KIT-PMP",
+          "desc": "Kit de o-rings de bridas",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "tanque-hidraulico",
+      "name": "Tanque hidráulico",
+      "system": "Hidráulico",
+      "position": [
+        -1.0,
+        2.0,
+        0.55
+      ],
+      "labelOffset": [
+        -0.8,
+        0.45,
+        0.25
+      ],
+      "specs": {
+        "Aceite": "ISO VG 46 antidesgaste",
+        "Tanque": "≈ 120 L",
+        "Sistema": "≈ 240 L",
+        "Filtro retorno": "10 µm"
+      },
+      "maintenance": {
+        "task": "Cambio de aceite hidráulico y filtros",
+        "intervalHours": 2000,
+        "lastServiceHours": 2900
+      },
+      "safety": [
+        "Liberar la presión del tanque antes de abrir la tapa.",
+        "Mantener limpieza extrema: la contaminación daña la bomba."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Poner la máquina en posición de servicio: brazo y cucharón recogidos, cilindros retraídos.",
+        "Liberar la presión del tanque presionando la válvula de alivio de la tapa.",
+        "Drenar el tanque por el tapón inferior a recipientes limpios.",
+        "Cambiar filtro de retorno y colador de succión. Limpiar el imán.",
+        "Rellenar con aceite filtrado hasta la mitad del visor, con los cilindros retraídos.",
+        "Purgar el aire de la bomba según el manual, arrancar en ralentí y operar suavemente cada función.",
+        "Verificar nivel en el visor y fugas."
+      ],
+      "checklist": [
+        "Presión liberada",
+        "Filtro de retorno cambiado",
+        "Colador limpio",
+        "Nivel en visor OK",
+        "Bomba purgada",
+        "Sin fugas"
+      ],
+      "parts": [
+        {
+          "pn": "FLT-HYD-R10",
+          "desc": "Filtro de retorno 10 µm",
+          "qty": 1
+        },
+        {
+          "pn": "FLT-HYD-PIL",
+          "desc": "Filtro piloto",
+          "qty": 1
+        },
+        {
+          "pn": "OIL-HYD-46",
+          "desc": "Aceite hidráulico ISO VG 46 (litros)",
+          "qty": 120
+        }
+      ]
+    },
+    {
+      "id": "tanque-combustible",
+      "name": "Combustible y separador de agua",
+      "system": "Combustible",
+      "position": [
+        -1.05,
+        1.5,
+        1.0
+      ],
+      "labelOffset": [
+        -0.8,
+        -0.05,
+        0.45
+      ],
+      "specs": {
+        "Combustible": "Diésel ultra bajo azufre (≤ 15 ppm)",
+        "Tanque": "≈ 400 L",
+        "Separador": "Drenar agua a diario"
+      },
+      "maintenance": {
+        "task": "Drenaje de agua del separador",
+        "intervalHours": 10,
+        "lastServiceHours": 4818
+      },
+      "safety": [
+        "No fumar ni generar chispas. Limpiar derrames de inmediato."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Colocar un recipiente bajo el separador de agua.",
+        "Abrir la válvula de drenaje hasta que salga combustible limpio, sin agua.",
+        "Cerrar la válvula y verificar que no gotee."
+      ],
+      "checklist": [
+        "Agua drenada",
+        "Válvula cerrada sin goteo"
+      ],
+      "parts": [
+        {
+          "pn": "FLT-FUEL-W30",
+          "desc": "Filtro separador de agua (cada 500 h)",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "bateria",
+      "name": "Baterías",
+      "system": "Eléctrico",
+      "position": [
+        1.0,
+        1.45,
+        -1.6
+      ],
+      "labelOffset": [
+        0.75,
+        0.3,
+        0
+      ],
+      "specs": {
+        "Sistema": "24 V (2 × 12 V en serie)",
+        "Capacidad": "≈ 100 Ah c/u",
+        "Corriente de arranque": "≈ 750 CCA"
+      },
+      "maintenance": {
+        "task": "Limpieza de bornes y prueba de carga",
+        "intervalHours": 250,
+        "lastServiceHours": 4700
+      },
+      "safety": [
+        "Desconectar primero el negativo y conectar al final.",
+        "Riesgo de gas explosivo: no generar chispas."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Abrir el interruptor general de baterías.",
+        "Inspeccionar carcasas, bornes y cables. Limpiar sulfato con cepillo y bicarbonato.",
+        "Medir tensión en reposo (> 12,4 V por batería) y hacer prueba de carga.",
+        "Aplicar grasa dieléctrica en bornes y ajustar."
+      ],
+      "checklist": [
+        "Bornes limpios y ajustados",
+        "Tensión medida",
+        "Prueba de carga OK"
+      ],
+      "parts": [
+        {
+          "pn": "BAT-12V-100",
+          "desc": "Batería 12 V 100 Ah",
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "id": "corona-giro",
+      "name": "Corona y rodamiento de giro",
+      "system": "Giro",
+      "position": [
+        0.7,
+        0.97,
+        0.85
+      ],
+      "labelOffset": [
+        0.8,
+        0.15,
+        0.35
+      ],
+      "specs": {
+        "Grasa": "EP2 base litio",
+        "Puntos": "4 graseras en el rodamiento"
+      },
+      "maintenance": {
+        "task": "Engrase del rodamiento de giro",
+        "intervalHours": 250,
+        "lastServiceHours": 4600
+      },
+      "safety": [
+        "Nadie debe estar en el radio de giro mientras se rota la superestructura."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Engrasar las 4 graseras con 2–3 bombeadas cada una.",
+        "Arrancar y girar la superestructura 45°. Apagar, bloquear y repetir el engrase.",
+        "Repetir hasta completar una vuelta completa."
+      ],
+      "checklist": [
+        "Graseras limpias antes de engrasar",
+        "Vuelta completa engrasada"
+      ],
+      "parts": [
+        {
+          "pn": "GRS-EP2-400",
+          "desc": "Cartucho de grasa EP2 400 g",
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "id": "cilindro-pluma",
+      "name": "Cilindro de la pluma",
+      "system": "Implemento",
+      "position": [
+        -0.25,
+        2.2,
+        2.25
+      ],
+      "labelOffset": [
+        0.75,
+        0.25,
+        0
+      ],
+      "status": "warn",
+      "alerts": [
+        "Fuga leve en el sello del vástago (reportada en la inspección diaria)"
+      ],
+      "specs": {
+        "Diámetro / vástago": "≈ 120 / 85 mm",
+        "Revisar": "Vástago sin rayas ni picaduras"
+      },
+      "maintenance": {
+        "task": "Engrase de pasadores del cilindro",
+        "intervalHours": 10,
+        "lastServiceHours": 4812
+      },
+      "safety": [
+        "Nunca trabajar bajo la pluma sin apoyarla en el suelo o calzarla."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Limpiar el vástago y observar dónde se origina la fuga (sello del vástago vs. conexiones).",
+        "Medir cuánto aceite se pierde: marcar el vástago y extender/retraer 10 ciclos.",
+        "Si la fuga supera una gota por ciclo, programar cambio del kit de sellos.",
+        "Engrasar pasadores de pie y cabeza del cilindro."
+      ],
+      "checklist": [
+        "Origen de la fuga identificado",
+        "Fuga cuantificada",
+        "Pasadores engrasados",
+        "Orden de trabajo creada si aplica"
+      ],
+      "parts": [
+        {
+          "pn": "SEAL-KIT-BM120",
+          "desc": "Kit de sellos cilindro pluma",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "pasadores-brazo",
+      "name": "Pasadores pluma-brazo",
+      "system": "Implemento",
+      "position": [
+        -0.25,
+        4.2,
+        4.2
+      ],
+      "labelOffset": [
+        0,
+        0.45,
+        0
+      ],
+      "specs": {
+        "Grasa": "EP2 con molibdeno",
+        "Graseras": "3 (pivote, cilindro de brazo x2)"
+      },
+      "maintenance": {
+        "task": "Engrase diario de pasadores",
+        "intervalHours": 10,
+        "lastServiceHours": 4805
+      },
+      "safety": [
+        "Usar plataforma o escalera estable; no trepar por la pluma."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Bajar el implemento para alcanzar las graseras desde el suelo cuando sea posible.",
+        "Limpiar cada grasera y engrasar hasta ver grasa nueva saliendo por las juntas.",
+        "Revisar holgura de pasadores y bujes (movimiento lateral visible)."
+      ],
+      "checklist": [
+        "Todas las graseras engrasadas",
+        "Sin holgura excesiva"
+      ],
+      "parts": [
+        {
+          "pn": "GRS-EP2-MO",
+          "desc": "Cartucho de grasa EP2 + MoS2",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "cilindro-cucharon",
+      "name": "Cilindro del cucharón",
+      "system": "Implemento",
+      "position": [
+        -0.25,
+        3.3,
+        5.05
+      ],
+      "labelOffset": [
+        0.75,
+        0.2,
+        0
+      ],
+      "specs": {
+        "Diámetro / vástago": "≈ 115 / 80 mm",
+        "Varillaje": "Revisar pasadores del eslabón en H"
+      },
+      "maintenance": {
+        "task": "Engrase de varillaje del cucharón",
+        "intervalHours": 10,
+        "lastServiceHours": 4815
+      },
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Engrasar pasadores del cilindro y del varillaje.",
+        "Revisar vástago y mangueras por fugas o roces."
+      ],
+      "checklist": [
+        "Varillaje engrasado",
+        "Mangueras sin roces"
+      ],
+      "parts": [
+        {
+          "pn": "SEAL-KIT-BK115",
+          "desc": "Kit de sellos cilindro cucharón",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "cucharon",
+      "name": "Cucharón y dientes",
+      "system": "Implemento",
+      "position": [
+        -0.25,
+        0.7,
+        6.3
+      ],
+      "labelOffset": [
+        0,
+        0.75,
+        0.1
+      ],
+      "specs": {
+        "Capacidad": "≈ 1,0 m³",
+        "Dientes": "5 puntas + adaptadores",
+        "Cambio de punta": "Al gastarse hasta el adaptador"
+      },
+      "maintenance": {
+        "task": "Inspección de desgaste de dientes y cuchillas",
+        "intervalHours": 250,
+        "lastServiceHours": 4600
+      },
+      "safety": [
+        "Usar martillo de bronce/pasador de remoción y gafas al cambiar puntas."
+      ],
+      "procedure": [
+        "⚠ Apoyar el cucharón en el suelo con los dientes horizontales y aplicar LOTO.",
+        "Inspeccionar cada punta: desgaste, fisuras y retención.",
+        "Revisar cuchillas laterales y soldaduras del cucharón.",
+        "Reemplazar puntas gastadas con pasador y retén nuevos."
+      ],
+      "checklist": [
+        "Puntas revisadas",
+        "Retenes firmes",
+        "Sin fisuras en el cucharón"
+      ],
+      "parts": [
+        {
+          "pn": "GET-TIP-20",
+          "desc": "Punta de diente estándar",
+          "qty": 5
+        },
+        {
+          "pn": "GET-PIN-20",
+          "desc": "Pasador + retén",
+          "qty": 5
+        }
+      ]
+    },
+    {
+      "id": "mando-final",
+      "name": "Mando final (lado izq.)",
+      "system": "Tren de rodaje",
+      "position": [
+        1.1,
+        0.45,
+        -2.05
+      ],
+      "labelOffset": [
+        0.8,
+        0.4,
+        -0.2
+      ],
+      "specs": {
+        "Aceite": "SAE 90 GL-5",
+        "Capacidad": "≈ 5 L por lado",
+        "Tapones": "Llenado / nivel / drenaje"
+      },
+      "maintenance": {
+        "task": "Cambio de aceite del mando final",
+        "intervalHours": 1000,
+        "lastServiceHours": 4000
+      },
+      "safety": [
+        "Aflojar el tapón despacio: puede haber presión interna."
+      ],
+      "procedure": [
+        "⚠ Estacionar en terreno firme y nivelado, bajar el cucharón al suelo, apagar el motor y aplicar bloqueo y etiquetado (LOTO).",
+        "Mover la máquina hasta dejar el tapón de drenaje en la posición más baja.",
+        "Retirar el tapón de nivel y luego el de drenaje. Drenar completamente.",
+        "Revisar si hay partículas metálicas en el aceite o en el tapón magnético.",
+        "Instalar el tapón de drenaje y llenar hasta que el aceite salga por el orificio de nivel.",
+        "Instalar el tapón de nivel y limpiar."
+      ],
+      "checklist": [
+        "Aceite drenado",
+        "Sin partículas metálicas",
+        "Nivel correcto",
+        "Tapones con torque"
+      ],
+      "parts": [
+        {
+          "pn": "OIL-GL5-90",
+          "desc": "Aceite SAE 90 GL-5 (litros)",
+          "qty": 5
+        },
+        {
+          "pn": "ORG-PLUG-FD",
+          "desc": "O-ring de tapones",
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "id": "tensor-oruga",
+      "name": "Tensión de la oruga",
+      "system": "Tren de rodaje",
+      "position": [
+        1.4,
+        0.5,
+        1.75
+      ],
+      "labelOffset": [
+        0.8,
+        0.35,
+        0.2
+      ],
+      "specs": {
+        "Catenaria": "≈ 300–335 mm (medida estándar)",
+        "Ajuste": "Grasa por válvula del tensor"
+      },
+      "maintenance": {
+        "task": "Medición y ajuste de tensión",
+        "intervalHours": 50,
+        "lastServiceHours": 4790
+      },
+      "safety": [
+        "⚠ Nunca aflojar la válvula de alivio más de 1 vuelta: la grasa está a alta presión.",
+        "No colocarse frente a la válvula del tensor."
+      ],
+      "procedure": [
+        "Levantar la oruga con la pluma y el brazo (ángulo de 90–110°) y girarla para eliminar barro.",
+        "⚠ Colocar soportes bajo el bastidor antes de medir. Aplicar LOTO.",
+        "Medir la catenaria entre el bastidor y la zapata en el punto medio.",
+        "Si está floja, inyectar grasa por la grasera del tensor. Si está tensa, aflojar la válvula ≤ 1 vuelta.",
+        "Bajar la oruga, mover la máquina adelante y atrás y volver a medir."
+      ],
+      "checklist": [
+        "Barro retirado",
+        "Máquina calzada",
+        "Catenaria dentro de rango",
+        "Válvula cerrada"
+      ],
+      "parts": [
+        {
+          "pn": "GRS-EP2-400",
+          "desc": "Cartucho de grasa EP2 400 g",
+          "qty": 1
+        }
+      ]
+    }
+  ]
+}
