@@ -4,6 +4,21 @@ App de **realidad mixta** para mantenimiento de maquinaria pesada. Con el Quest 
 
 Funciona en el **Meta Quest 3** (realidad mixta) y en **celulares Android** con la cámara (realidad aumentada con ARCore). Es una app **WebXR**: se abre en el navegador del Quest (no hay que instalar APK ni usar Unity). También funciona en la PC como maqueta 3D para preparar y revisar los datos.
 
+## Versiones
+
+| Dirección | Para | Estado |
+|---|---|---|
+| `https://ingtecjacosta-sudo.github.io/Mantenimiento_ra/` | iPhone, Quest 3 (y Android) | Estable (versión 9) |
+| `https://ingtecjacosta-sudo.github.io/Mantenimiento_ra/android/` | Android | **En desarrollo**: aquí se prueban las mejoras antes de pasarlas a la versión estable |
+
+Ambas comparten los datos guardados en el dispositivo (equipos, fotos, puntos).
+
+### Novedades de la versión Android en desarrollo
+
+- **Ubicación con puntos de referencia**: en lugar de 2 extremos, se marcan con la mira varios puntos fáciles de reconocer donde el equipo toca el suelo (p. ej. las 4 esquinas de las orugas). La app calcula el mejor ajuste (giro, escala y posición) con todos ellos por mínimos cuadrados, informa la **precisión lograda** y **descarta un punto mal marcado**. Se puede **Saltar** un punto que no se ve, **Deshacer** y terminar con **Listo** desde 2 puntos.
+- Los puntos de referencia se definen en el editor de fotos (**+ Punto de referencia**), marcándolos en un costado y en frente o atrás. La excavadora de ejemplo ya trae sus 4 esquinas de orugas. Los puntos se ordenan solos para dar una vuelta alrededor del equipo.
+- Croquis en planta con los lados izquierdo/derecho rotulados y todos los puntos numerados.
+
 ## Qué hace
 
 - **Carteles según la mirada**: los componentes dentro de tu campo de visión muestran un cartel compacto (nombre + estado). El que miras de frente se amplía con el plan de mantenimiento y los datos clave. Se escalan con la distancia para leerse igual de cerca y de lejos.

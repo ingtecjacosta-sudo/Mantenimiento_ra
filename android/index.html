@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mantenimiento RA · Android</title>
+  <meta name="description" content="Asistente de mantenimiento de maquinaria pesada en realidad mixta para Meta Quest 3">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <aside id="panel">
+    <header>
+      <div>
+        <h1>Mantenimiento RA</h1>
+        <p class="sub">Carteles de componentes sobre la máquina real · Meta Quest 3 y celular Android</p>
+      </div>
+      <button id="btnPanel" class="icon" title="Mostrar/ocultar panel" aria-label="Mostrar u ocultar panel">☰</button>
+    </header>
+
+    <div class="body">
+      <label>Equipo
+        <select id="machineSelect"></select>
+      </label>
+      <label>Horómetro actual (h)
+        <input id="hourMeter" type="number" min="0" step="1" inputmode="numeric">
+      </label>
+      <p id="machineInfo" class="info"></p>
+      <ul id="alertList" class="alerts"></ul>
+
+      <button id="btnXR" class="primary" disabled>Buscando visor…</button>
+      <p id="xrStatus" class="status"></p>
+
+      <div class="row">
+        <button id="btnShowAll">Carteles: Auto</button>
+        <button id="btnAlerts">Ver: Todo</button>
+      </div>
+      <div class="row">
+        <button id="btnExport">Exportar JSON</button>
+        <label class="button">Cargar JSON<input id="fileInput" type="file" accept="application/json,.json" hidden></label>
+      </div>
+      <div class="row">
+        <button id="btnPhoto">📷 Cargar foto</button>
+        <button id="btnNew">+ Nuevo equipo</button>
+      </div>
+      <button id="btnReset" class="link">Restablecer / eliminar este equipo</button>
+      <p id="appVersion" class="version"></p>
+
+      <details>
+        <summary>Cómo se usa en el Quest 3</summary>
+        <ol>
+          <li>Pulsa <b>Entrar en realidad mixta</b>. Verás la máquina real a través de las cámaras.</li>
+          <li><b>Ubicar equipo:</b> apunta con el control (o la mano) al punto de referencia en el suelo indicado en el menú y presiona el gatillo / pellizca. Gira con el stick si hace falta.</li>
+          <li><b>Mira las piezas:</b> los carteles aparecen solos. El que miras de frente se amplía con el estado y el próximo servicio.</li>
+          <li>Apunta a un cartel y presiona el gatillo para abrir la <b>ficha</b>: especificaciones, procedimiento paso a paso, checklist y repuestos.</li>
+          <li><b>Registrar puntos</b> (una vez por equipo): toca cada pieza con la punta del control y presiona el gatillo. Luego <b>Exportar JSON</b> para compartir la configuración.</li>
+        </ol>
+        <p><b>Equipo desde una foto:</b> toca <b>+ Nuevo equipo</b> (o <b>📷 Cargar foto</b> en uno existente), toma una foto de costado, elige qué lado muestra y toca <b>Calibrar</b>: marca el extremo delantero a nivel del suelo, el extremo trasero y el punto más alto. Luego toca <b>+ Agregar componente</b> y toca la foto donde está cada pieza. Los carteles se ubican solos en 3D; afínalos después en RA con <b>Registrar puntos</b>.</p>
+        <p><b>En el celular Android:</b> pulsa <b>Entrar en realidad aumentada</b>, mueve el celular despacio apuntando al suelo, centra la mira en el punto de referencia y toca <b>Ubicar aquí</b>. Luego recorre la máquina con la cámara y <b>toca un cartel</b> para abrir su ficha.</p>
+        <p>En la PC: arrastra para girar la vista, rueda para acercar, clic en un cartel para abrir la ficha.</p>
+      </details>
+    </div>
+  </aside>
+
+  <!-- Editor de foto de referencia -->
+  <section id="photoEditor" hidden></section>
+
+  <!-- Interfaz táctil sobre la cámara (modo celular, WebXR DOM Overlay) -->
+  <div id="arOverlay">
+    <div id="arTop" class="ui"></div>
+    <div id="arCross" aria-hidden="true"></div>
+    <div id="arToast"></div>
+    <div id="arBottom" class="ui"></div>
+    <section id="arSheet" class="ui" hidden></section>
+  </div>
+
+  <script>
+    // Si algo falla al cargar, mostrarlo en pantalla en vez de dejar los botones muertos.
+    (function () {
+      function show(msg) {
+        var el = document.getElementById('xrStatus');
+        if (el) { el.style.color = '#ff5d55'; el.textContent = 'Error: ' + msg + ' — recarga la página (si sigue, borra los datos del sitio en Chrome).'; }
+      }
+      window.addEventListener('error', function (e) { show(e.message || 'no se pudo cargar un archivo'); }, true);
+      window.addEventListener('unhandledrejection', function (e) { show((e.reason && e.reason.message) || String(e.reason)); });
+      setTimeout(function () { if (!document.body.classList.contains('ready')) show('la app no terminó de cargar (¿sin internet?)'); }, 12000);
+    })();
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
