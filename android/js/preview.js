@@ -3,12 +3,25 @@
 // - "guide": contorno en alambre para alinear con la máquina real en RA.
 import * as THREE from 'three';
 
+/**
+ * Geometría de una pieza de la maqueta. size = [ancho X, alto Y, largo Z].
+ * shape "wheel": cilindro con el eje a lo largo de X (diámetro = alto = largo).
+ */
+export function partGeometry(part) {
+  if (part.shape === 'wheel') {
+    const g = new THREE.CylinderGeometry(part.size[1] / 2, part.size[1] / 2, part.size[0], 28);
+    g.rotateZ(Math.PI / 2);
+    return g;
+  }
+  return new THREE.BoxGeometry(...part.size);
+}
+
 export function buildPreview(machine) {
   const solid = new THREE.Group();
   const guide = new THREE.Group();
   const edgeMat = new THREE.LineBasicMaterial({ color: 0x37c8ff, transparent: true, opacity: 0.6, depthWrite: false });
   for (const part of machine.preview ?? []) {
-    const geo = new THREE.BoxGeometry(...part.size);
+    const geo = partGeometry(part);
     const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: part.color ?? '#d9a400', roughness: 0.75, metalness: 0.15 }));
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat);
     for (const o of [mesh, edges]) {

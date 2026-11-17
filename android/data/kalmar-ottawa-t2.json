@@ -1,0 +1,776 @@
+{
+  "id": "kalmar-ottawa-t2",
+  "name": "Kalmar Ottawa T2 · WB 126\"",
+  "model": "Terminal tractor Kalmar Ottawa T2 4x2, LHD, entre ejes 126 in (3200 mm)",
+  "hourMeter": 0,
+  "note": "Medidas del plano Kalmar DSK8504-D (GEN ARRANGEMENT, OTTAWA T2, LHD). Ubicación de componentes estimada desde el plano: confirmar en la unidad. Intervalos de mantenimiento orientativos: Verificar con el manual de servicio de Kalmar Ottawa T2 de la unidad.",
+  "dimensions": [
+    2.464,
+    3.2,
+    5.105
+  ],
+  "exactDimensions": true,
+  "reference": {
+    "description": "las 4 ruedas, donde tocan el suelo",
+    "frontHint": "bajo el paragolpes delantero",
+    "rearHint": "bajo la plataforma trasera"
+  },
+  "preview": [
+    {
+      "size": [
+        1.372,
+        2.0300000000000002,
+        2.05
+      ],
+      "pos": [
+        0.518,
+        2.185,
+        1.483
+      ],
+      "color": "#e8eaed"
+    },
+    {
+      "size": [
+        2.464,
+        0.62,
+        0.5
+      ],
+      "pos": [
+        0,
+        0.86,
+        2.303
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        1.03,
+        1.2,
+        1.51
+      ],
+      "pos": [
+        -0.717,
+        1.2,
+        1.798
+      ],
+      "color": "#8a9099"
+    },
+    {
+      "size": [
+        0.58,
+        1.23,
+        0.5
+      ],
+      "pos": [
+        -0.91,
+        1.95,
+        0.753
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        0.12,
+        1.5580000000000003,
+        0.12
+      ],
+      "pos": [
+        -0.87,
+        2.679,
+        0.763
+      ],
+      "color": "#c0c0c0"
+    },
+    {
+      "size": [
+        0.9,
+        0.35,
+        3.8055000000000003
+      ],
+      "pos": [
+        0,
+        0.9,
+        -0.35
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        0.36,
+        0.5,
+        1.1
+      ],
+      "pos": [
+        1.06,
+        0.6,
+        -0.047
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        0.58,
+        0.6,
+        0.42
+      ],
+      "pos": [
+        -0.89,
+        0.9,
+        -0.938
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        0.55,
+        0.73,
+        0.53
+      ],
+      "pos": [
+        0.9,
+        0.74,
+        -0.927
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "size": [
+        0.8,
+        0.12,
+        1.17
+      ],
+      "pos": [
+        0,
+        1.3,
+        -1.047
+      ],
+      "rot": [
+        20,
+        0,
+        0
+      ],
+      "color": "#d9a400"
+    },
+    {
+      "size": [
+        0.9,
+        0.12,
+        0.89
+      ],
+      "pos": [
+        0,
+        1.54,
+        -1.738
+      ],
+      "color": "#3a3a3a"
+    },
+    {
+      "size": [
+        2.0,
+        0.4,
+        0.6
+      ],
+      "pos": [
+        0,
+        1.0,
+        -2.248
+      ],
+      "color": "#2b2b2b"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        0.997,
+        0.526,
+        1.283
+      ],
+      "color": "#1f1f1f"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        -0.997,
+        0.526,
+        1.283
+      ],
+      "color": "#1f1f1f"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        1.092,
+        0.526,
+        -1.917
+      ],
+      "color": "#1f1f1f"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        0.772,
+        0.526,
+        -1.917
+      ],
+      "color": "#1f1f1f"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        -0.772,
+        0.526,
+        -1.917
+      ],
+      "color": "#1f1f1f"
+    },
+    {
+      "shape": "wheel",
+      "size": [
+        0.28,
+        1.0516,
+        1.0516
+      ],
+      "pos": [
+        -1.092,
+        0.526,
+        -1.917
+      ],
+      "color": "#1f1f1f"
+    }
+  ],
+  "refPoints": [
+    {
+      "id": "ref-rueda-del-izq",
+      "name": "Rueda delantera izquierda",
+      "hint": "en el suelo, del lado de afuera de la rueda, justo debajo del centro de la llanta",
+      "ground": true,
+      "position": [
+        1.137,
+        0,
+        1.283
+      ]
+    },
+    {
+      "id": "ref-rueda-del-der",
+      "name": "Rueda delantera derecha",
+      "hint": "en el suelo, del lado de afuera de la rueda, justo debajo del centro de la llanta",
+      "ground": true,
+      "position": [
+        -1.137,
+        0,
+        1.283
+      ]
+    },
+    {
+      "id": "ref-rueda-tras-der",
+      "name": "Rueda trasera derecha (dual)",
+      "hint": "en el suelo, del lado de afuera de la rueda dual exterior, debajo del centro de la llanta",
+      "ground": true,
+      "position": [
+        -1.232,
+        0,
+        -1.917
+      ]
+    },
+    {
+      "id": "ref-rueda-tras-izq",
+      "name": "Rueda trasera izquierda (dual)",
+      "hint": "en el suelo, del lado de afuera de la rueda dual exterior, debajo del centro de la llanta",
+      "ground": true,
+      "position": [
+        1.232,
+        0,
+        -1.917
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "motor",
+      "name": "Motor diésel",
+      "system": "Motor",
+      "position": [
+        -0.7,
+        1.15,
+        1.803
+      ],
+      "labelOffset": [
+        -0.6,
+        0.55,
+        0.2
+      ],
+      "description": "Compartimiento del motor al lado derecho de la cabina (cabina desplazada). Verificar con el manual de servicio de Kalmar Ottawa T2 de la unidad.",
+      "specs": {
+        "Ubicación": "Lado derecho, junto a la cabina",
+        "Aceite": "Según manual del motor",
+        "Acceso": "Tapa lateral derecha"
+      },
+      "maintenance": {
+        "task": "Cambio de aceite y filtro de motor",
+        "intervalHours": 500,
+        "lastServiceHours": 0
+      },
+      "safety": [
+        "Aceite caliente: esperar a que el motor se enfríe.",
+        "Recolectar el aceite usado."
+      ],
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Abrir la tapa del compartimiento del motor.",
+        "Drenar el aceite con el motor tibio.",
+        "Cambiar el filtro (lubricar la junta, apretar a mano según indicación del filtro).",
+        "Reinstalar el tapón de drenaje con junta nueva y rellenar hasta el nivel.",
+        "Arrancar, verificar fugas y presión de aceite; apagar y comprobar nivel.",
+        "Registrar el horómetro del servicio."
+      ],
+      "checklist": [
+        "LOTO aplicado",
+        "Aceite drenado",
+        "Filtro nuevo",
+        "Nivel correcto",
+        "Sin fugas"
+      ],
+      "parts": [
+        {
+          "pn": "—",
+          "desc": "Filtro de aceite de motor (ver catálogo Kalmar)",
+          "qty": 1
+        },
+        {
+          "pn": "—",
+          "desc": "Aceite de motor (litros según manual)",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "filtro-aire",
+      "name": "Filtro de aire",
+      "system": "Admisión",
+      "position": [
+        -0.91,
+        1.95,
+        0.753
+      ],
+      "labelOffset": [
+        -0.6,
+        0.5,
+        0.2
+      ],
+      "specs": {
+        "Ubicación": "Caja alta lado derecho, detrás del motor",
+        "Cambio": "Según indicador de restricción"
+      },
+      "maintenance": {
+        "task": "Inspección del elemento e indicador de restricción",
+        "intervalHours": 250,
+        "lastServiceHours": 0
+      },
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Abrir la caja del filtro.",
+        "Retirar el elemento primario sin golpearlo.",
+        "Limpiar la carcasa; no retirar el elemento de seguridad salvo cambio.",
+        "Instalar elemento nuevo o inspeccionado y resetear el indicador."
+      ],
+      "checklist": [
+        "Carcasa limpia",
+        "Elemento sin daños",
+        "Indicador reseteado"
+      ],
+      "parts": [
+        {
+          "pn": "—",
+          "desc": "Elemento primario de filtro de aire",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "escape",
+      "name": "Escape / postratamiento",
+      "system": "Escape",
+      "position": [
+        -0.87,
+        2.9,
+        0.763
+      ],
+      "labelOffset": [
+        -0.6,
+        0.3,
+        0.3
+      ],
+      "specs": {
+        "Altura de la salida": "3.46 m"
+      },
+      "maintenance": {
+        "task": "Inspección de abrazaderas, fugas y soportes",
+        "intervalHours": 500,
+        "lastServiceHours": 0
+      },
+      "safety": [
+        "Superficies muy calientes: no tocar con el motor en marcha o recién apagado."
+      ],
+      "checklist": [
+        "Sin fugas de gases",
+        "Abrazaderas firmes",
+        "Soportes en buen estado"
+      ]
+    },
+    {
+      "id": "radiador",
+      "name": "Radiador y enfriamiento",
+      "system": "Enfriamiento",
+      "position": [
+        0,
+        0.95,
+        2.153
+      ],
+      "labelOffset": [
+        0,
+        0.5,
+        0.6
+      ],
+      "specs": {
+        "Ubicación": "Detrás de la parrilla frontal"
+      },
+      "maintenance": {
+        "task": "Limpieza de núcleos y revisión de mangueras",
+        "intervalHours": 500,
+        "lastServiceHours": 0
+      },
+      "safety": [
+        "No abrir la tapa del radiador con el motor caliente."
+      ],
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Con el motor frío, revisar el nivel de refrigerante.",
+        "Soplar los núcleos desde el lado del ventilador.",
+        "Revisar mangueras y abrazaderas."
+      ],
+      "checklist": [
+        "Nivel OK",
+        "Núcleos limpios",
+        "Mangueras sin daños"
+      ]
+    },
+    {
+      "id": "combustible",
+      "name": "Tanque de combustible",
+      "system": "Combustible",
+      "position": [
+        1.06,
+        0.6,
+        -0.047
+      ],
+      "labelOffset": [
+        0.6,
+        0.45,
+        0
+      ],
+      "specs": {
+        "Ubicación": "Lado izquierdo, detrás de la cabina",
+        "Separador de agua": "Drenar a diario"
+      },
+      "maintenance": {
+        "task": "Drenaje del separador de agua",
+        "intervalHours": 10,
+        "lastServiceHours": 0
+      },
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Colocar un recipiente bajo el separador.",
+        "Abrir la válvula hasta que salga combustible limpio.",
+        "Cerrar y verificar que no gotee."
+      ],
+      "checklist": [
+        "Agua drenada",
+        "Sin goteo"
+      ]
+    },
+    {
+      "id": "def-baterias",
+      "name": "Caja trasera izquierda (DEF / baterías)",
+      "system": "Eléctrico / Escape",
+      "position": [
+        0.9,
+        0.85,
+        -0.927
+      ],
+      "labelOffset": [
+        0.6,
+        0.45,
+        0
+      ],
+      "description": "Confirmar en la unidad qué contiene esta caja (tanque DEF de tapa azul y/o baterías). Verificar con el manual de servicio de Kalmar Ottawa T2 de la unidad.",
+      "specs": {
+        "Ubicación": "Lado izquierdo, delante del eje trasero"
+      },
+      "maintenance": {
+        "task": "Inspección de bornes, nivel de DEF y fijaciones",
+        "intervalHours": 250,
+        "lastServiceHours": 0
+      },
+      "checklist": [
+        "Bornes limpios y firmes",
+        "Nivel de DEF OK",
+        "Caja y tapas firmes"
+      ]
+    },
+    {
+      "id": "hidraulico",
+      "name": "Tanque hidráulico",
+      "system": "Hidráulico",
+      "position": [
+        -0.89,
+        0.95,
+        -0.938
+      ],
+      "labelOffset": [
+        -0.6,
+        0.45,
+        0
+      ],
+      "specs": {
+        "Ubicación": "Lado derecho, delante del eje trasero",
+        "Uso": "Brazo de elevación y dirección"
+      },
+      "maintenance": {
+        "task": "Cambio de filtro hidráulico",
+        "intervalHours": 1000,
+        "lastServiceHours": 0
+      },
+      "safety": [
+        "Bajar el brazo y liberar la presión antes de abrir el sistema."
+      ],
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Bajar el brazo completamente.",
+        "Liberar la presión del tanque.",
+        "Cambiar el filtro de retorno.",
+        "Completar nivel con aceite limpio y verificar fugas."
+      ],
+      "checklist": [
+        "Brazo abajo",
+        "Presión liberada",
+        "Filtro cambiado",
+        "Nivel OK",
+        "Sin fugas"
+      ],
+      "parts": [
+        {
+          "pn": "—",
+          "desc": "Filtro hidráulico de retorno",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "quinta-rueda",
+      "name": "Quinta rueda",
+      "system": "Acople",
+      "position": [
+        0,
+        1.6,
+        -1.738
+      ],
+      "labelOffset": [
+        0,
+        0.45,
+        -0.6
+      ],
+      "specs": {
+        "Altura (brazo abajo)": "1.60 m",
+        "Elevación del brazo": "≈ 0.45 m"
+      },
+      "maintenance": {
+        "task": "Engrase de la placa y revisión del mecanismo de traba",
+        "intervalHours": 50,
+        "lastServiceHours": 0
+      },
+      "safety": [
+        "Nunca trabajar bajo un tráiler levantado sin soporte."
+      ],
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Limpiar la placa de grasa vieja y suciedad.",
+        "Engrasar la placa y los puntos de pivote.",
+        "Probar apertura y cierre de la traba (mordaza)."
+      ],
+      "checklist": [
+        "Placa engrasada",
+        "Traba cierra y abre bien",
+        "Sin fisuras ni desgaste excesivo"
+      ]
+    },
+    {
+      "id": "brazo",
+      "name": "Brazo de elevación y cilindros",
+      "system": "Hidráulico",
+      "position": [
+        0.45,
+        1.25,
+        -1.047
+      ],
+      "labelOffset": [
+        0.6,
+        0.4,
+        0
+      ],
+      "specs": {
+        "Revisar": "Vástagos sin rayas, sin fugas en sellos"
+      },
+      "maintenance": {
+        "task": "Engrase de pivotes del brazo y cilindros",
+        "intervalHours": 50,
+        "lastServiceHours": 0
+      },
+      "procedure": [
+        "⚠ Estacionar en superficie nivelada, freno de estacionamiento aplicado, brazo (boom) abajo, motor apagado y bloqueo y etiquetado (LOTO).",
+        "Bajar el brazo.",
+        "Engrasar pivotes del brazo y de los cilindros.",
+        "Revisar vástagos, sellos y mangueras."
+      ],
+      "checklist": [
+        "Pivotes engrasados",
+        "Sin fugas",
+        "Mangueras sin roces"
+      ]
+    },
+    {
+      "id": "conexiones",
+      "name": "Conexiones al tráiler (aire / eléctrica)",
+      "system": "Frenos",
+      "position": [
+        -0.2,
+        2.0,
+        0.433
+      ],
+      "labelOffset": [
+        0,
+        0.45,
+        -0.5
+      ],
+      "specs": {
+        "Ubicación": "Parte trasera de la cabina"
+      },
+      "maintenance": {
+        "task": "Inspección de mangueras, manos de acople y cable",
+        "intervalHours": 10,
+        "lastServiceHours": 0
+      },
+      "checklist": [
+        "Mangueras sin cortes",
+        "Sellos de acoples OK",
+        "Cable y enchufe OK"
+      ]
+    },
+    {
+      "id": "eje-del",
+      "name": "Eje delantero y dirección",
+      "system": "Dirección",
+      "position": [
+        0.75,
+        0.526,
+        1.283
+      ],
+      "labelOffset": [
+        0.6,
+        0.6,
+        0.2
+      ],
+      "maintenance": {
+        "task": "Engrase de pivotes (king pins) y terminales",
+        "intervalHours": 250,
+        "lastServiceHours": 0
+      },
+      "checklist": [
+        "Pivotes engrasados",
+        "Terminales sin juego",
+        "Neumáticos sin daños"
+      ]
+    },
+    {
+      "id": "eje-tras",
+      "name": "Eje trasero y frenos",
+      "system": "Tren motriz",
+      "position": [
+        -0.6,
+        0.526,
+        -1.917
+      ],
+      "labelOffset": [
+        -0.6,
+        0.6,
+        0
+      ],
+      "specs": {
+        "Neumáticos": "11R22.5 duales"
+      },
+      "maintenance": {
+        "task": "Revisión de nivel del diferencial y ajuste de frenos",
+        "intervalHours": 500,
+        "lastServiceHours": 0
+      },
+      "checklist": [
+        "Nivel del diferencial OK",
+        "Frenos ajustados",
+        "Sin fugas en el cubo"
+      ]
+    },
+    {
+      "id": "neumaticos",
+      "name": "Neumáticos",
+      "system": "Rodado",
+      "position": [
+        0.997,
+        0.526,
+        1.283
+      ],
+      "labelOffset": [
+        0.6,
+        0.5,
+        0.3
+      ],
+      "specs": {
+        "Medida": "11R22.5",
+        "Diámetro": "1052 mm",
+        "Presión": "Según placa / manual"
+      },
+      "maintenance": {
+        "task": "Control de presión y estado",
+        "intervalHours": 10,
+        "lastServiceHours": 0
+      },
+      "checklist": [
+        "Presión correcta",
+        "Sin cortes ni deformaciones",
+        "Tuercas de rueda firmes"
+      ]
+    }
+  ]
+}

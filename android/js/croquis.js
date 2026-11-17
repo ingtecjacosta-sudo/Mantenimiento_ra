@@ -18,9 +18,18 @@ function projectedParts(machine, axisH, axisV) {
     obj.updateMatrix();
     const [w, h, d] = part.size;
     const pts = [];
-    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
-      v.set((sx * w) / 2, (sy * h) / 2, (sz * d) / 2).applyMatrix4(obj.matrix);
-      pts.push([v[axisH], v[axisV]]);
+    if (part.shape === 'wheel') {
+      // Rueda: dos círculos (caras) a lo largo del eje X
+      for (const sx of [-1, 1]) for (let i = 0; i < 24; i++) {
+        const t = (i / 24) * Math.PI * 2;
+        v.set((sx * w) / 2, (Math.cos(t) * h) / 2, (Math.sin(t) * d) / 2).applyMatrix4(obj.matrix);
+        pts.push([v[axisH], v[axisV]]);
+      }
+    } else {
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+        v.set((sx * w) / 2, (sy * h) / 2, (sz * d) / 2).applyMatrix4(obj.matrix);
+        pts.push([v[axisH], v[axisV]]);
+      }
     }
     parts.push(hull(pts));
   }

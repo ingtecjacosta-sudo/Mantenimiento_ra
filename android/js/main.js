@@ -337,7 +337,8 @@ function computeFit(withReticle) {
   const pairs = [];
   place.marks.forEach((w, i) => { if (w) pairs.push({ m: place.refs[i].position, w, i }); });
   if (withReticle && reticle.visible && !place.marks[place.step]) pairs.push({ m: place.refs[place.step].position, w: reticle.position.clone(), i: place.step });
-  const fit = fitPoseRobust(pairs);
+  // Equipos con medidas de fábrica (exactDimensions): la escala queda fija en 1 y solo se ajustan giro y posición
+  const fit = fitPoseRobust(pairs, { allowScale: !app.machine.exactDimensions });
   if (fit) fit.indices = pairs.map((p) => p.i);
   return fit;
 }
@@ -1181,7 +1182,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = 'Android 10';
+export const APP_VERSION = 'Android 11';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

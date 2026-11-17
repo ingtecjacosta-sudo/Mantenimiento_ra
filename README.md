@@ -18,6 +18,8 @@ Ambas comparten los datos guardados en el dispositivo (equipos, fotos, puntos).
 - **Ubicación con puntos de referencia**: en lugar de 2 extremos, se marcan con la mira varios puntos fáciles de reconocer donde el equipo toca el suelo (p. ej. las 4 esquinas de las orugas). La app calcula el mejor ajuste (giro, escala y posición) con todos ellos por mínimos cuadrados, informa la **precisión lograda** y **descarta un punto mal marcado**. Se puede **Saltar** un punto que no se ve, **Deshacer** y terminar con **Listo** desde 2 puntos.
 - Los puntos de referencia se definen en el editor de fotos (**+ Punto de referencia**), marcándolos en un costado y en frente o atrás. La excavadora de ejemplo ya trae sus 4 esquinas de orugas. Los puntos se ordenan solos para dar una vuelta alrededor del equipo.
 - Croquis en planta con los lados izquierdo/derecho rotulados y todos los puntos numerados.
+- **Equipos precargados de la flota** con medidas de plano de fábrica (escala fija al ubicar). Primero: **Kalmar Ottawa T2** (terminal tractor, WB 126"), con las 4 ruedas como puntos de referencia. Se genera con `herramientas/generar_ottawa_t2.py [116|126|136]`.
+- La maqueta admite ruedas cilíndricas (`"shape": "wheel"`).
 
 ## Qué hace
 

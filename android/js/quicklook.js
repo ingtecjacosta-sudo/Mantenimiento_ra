@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { USDZExporter } from 'three/addons/exporters/USDZExporter.js';
 import { ComponentLabel } from './labels.js';
-import { previewBounds } from './preview.js';
+import { previewBounds, partGeometry } from './preview.js';
 import { STATUS } from './panel.js';
 
 export const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -46,7 +46,7 @@ export function buildQuickLookScene(machine, { guide = true } = {}) {
   if (guide) {
     const gm = mat(0x37c8ff, { transparent: true, opacity: 0.16, emissive: 0x0b3a52 });
     for (const part of machine.preview ?? []) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(...part.size), gm);
+      const m = new THREE.Mesh(partGeometry(part), gm);
       m.position.fromArray(part.pos);
       if (part.rot) m.rotation.set(...part.rot.map(THREE.MathUtils.degToRad));
       root.add(m);
