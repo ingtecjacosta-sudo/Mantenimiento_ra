@@ -642,7 +642,16 @@ Object.assign(app.actions, {
   toggleShowAll: () => { state.showAll = !state.showAll; syncDomButtons(); },
   toggleAlertsOnly: () => { state.alertsOnly = !state.alertsOnly; syncDomButtons(); },
   toggleGuide: () => { state.showGuide = !state.showGuide; applyVisibility(); },
-  exitXR: () => renderer.xr.getSession()?.end(),
+  exitXR: () => {
+    // En algunos Android (p. ej. Samsung) cerrar la sesión dentro del mismo toque sobre la
+    // interfaz superpuesta hace caer el proceso gráfico de Chrome. Se oculta la interfaz y se
+    // cierra la sesión un instante después, fuera del evento del toque.
+    const session = renderer.xr.getSession();
+    if (!session || exiting) return;
+    exiting = true;
+    document.body.classList.add('xr-exiting');
+    setTimeout(() => { session.end().catch(() => {}).finally(() => { exiting = false; }); }, 120);
+  },
   exportJSON: async () => {
     const out = exportMachine(app.machine);
     out.photosData = {}; // las fotos viajan dentro del JSON
@@ -952,12 +961,27 @@ async function enterXR() {
 }
 
 let savedDesktopView = null;
+let exiting = false;
+
 function onSessionEnd() {
   state.xr = false;
   state.arMode = false;
   state.mode = 'view';
-  dropAnchor();
+  // La sesión ya terminó: el ancla y la detección de superficies dejaron de existir.
+  // No se llama a delete()/cancel() sobre objetos de una sesión cerrada.
+  anchor = null;
   anchorDueAt = 0;
+  viewerHitSource = null;
+  for (const c of controllers) { c.userData.hitSource = null; }
+  document.body.classList.remove('in-xr', 'handheld');
+  // El resto del ordenamiento, un instante después y protegido: un error aquí no debe tirar la página.
+  setTimeout(() => {
+    try { finishSessionEnd(); } catch (e) { console.error('Error al salir de RA', e); }
+    document.body.classList.remove('xr-exiting');
+  }, 0);
+}
+
+function finishSessionEnd() {
   detail.close();
   controls.enabled = true;
   machineRoot.visible = true;
@@ -967,11 +991,9 @@ function onSessionEnd() {
   clearPlaceMarkers();
   if (savedDesktopView) { camera.position.copy(savedDesktopView.pos); controls.target.copy(savedDesktopView.target); }
   for (const c of controllers) onControllerDisconnected(c);
-  viewerHitSource?.cancel?.();
-  viewerHitSource = null;
   overlay.closeSheet();
+  overlay.hideGuide();
   state.handheld = false;
-  document.body.classList.remove('in-xr', 'handheld');
   applyVisibility();
 }
 
@@ -1182,7 +1204,7 @@ function fillSelect(selectedId) {
   $('machineSelect').value = selectedId;
 }
 
-export const APP_VERSION = 'Android 11';
+export const APP_VERSION = 'Android 12';
 
 async function init() {
   try { setupDom(); } catch (e) { console.error(e); }

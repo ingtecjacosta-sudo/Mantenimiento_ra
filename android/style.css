@@ -227,3 +227,4 @@ canvas.croquis.big { height: 300px; margin: 6px 0; }
 #arBottom p.pl-count .ok { color: var(--ok); } #arBottom p.pl-count .warn { color: var(--warn); }
 #arGuide ul.ref-list { margin: 6px 0; padding-left: 18px; font-size: 14px; }
 #arGuide p.warn { color: var(--warn); }
+body.xr-exiting #arOverlay { visibility: hidden; }
